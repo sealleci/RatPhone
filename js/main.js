@@ -1576,7 +1576,7 @@ window.onload = function() {
     loadShici(0);
     loadMusic(cur_music_index);
     clock_timer = setInterval(clockTick, clock_intv);
-    debugOpenPhone();
+    // debugOpenPhone();
     console.log('password: ' + 7182);
     // battery_timer = setInterval(powerTick, power_intv);
     // signal_timer = setInterval(signalTick, signal_intv);
@@ -2064,7 +2064,7 @@ const dialogs = {
         [0, "等等，我就是老鼠啊"],
         [1, "乐"],
         [0, "呜呜呜，我是个贪吃鼠"],
-        [1, "那把剩下的那根雪糕送我吧"],
+        [1, "把剩下的那根雪糕送我吧"],
         [0, "啊这"],
         [0, "我已经吃完了"],
         [1, "？"],
