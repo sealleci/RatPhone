@@ -162,7 +162,7 @@ function upChatBody() {
     if (chat_body.scrollTop === 0) {
         chat_body.style.animation = `chat-body-up ${chat_body_flex_time}s ease-out 0s 1`;
     }
-    sleep(chat_body_flex_time * 1000).then(function() {
+    sleep(chat_body_flex_time * 1000).then(function () {
         chat_body.style.animation = 'none';
     });
 }
@@ -173,7 +173,7 @@ function downChatBody() {
     if (chat_body.clientHeight < chat_body.scrollHeight &&
         Math.round(chat_body.scrollTop + chat_body.clientHeight + 35) >= Math.round(chat_body.scrollHeight)) {
         chat_body.style.animation = `chat-body-down ${chat_body_flex_time}s ease-out 0s 1`;
-        sleep(chat_body_flex_time * 1000).then(function() {
+        sleep(chat_body_flex_time * 1000).then(function () {
             chat_body.style.animation = 'none';
         });
     }
@@ -235,7 +235,7 @@ function getTextTime() {
             dialogs[cur_block][tmp_text_cnt].type === 1) {
             read_time = Math.floor(text_intv *
                 dialogs[cur_block][tmp_text_cnt]
-                .dialog.length / read_mul);
+                    .dialog.length / read_mul);
             break;
         }
         tmp_text_cnt--;
@@ -708,17 +708,17 @@ function genJumpBlock() {
         }
     }
     if (r1 >= 30 && r2 > 10 && obj3) {
-        obj3.timer = setInterval(function() {
+        obj3.timer = setInterval(function () {
             moveJumpBlock(obj3);
         }, jump_intv);
 
     }
     if (r1 >= 30 && obj2) {
-        obj2.timer = setInterval(function() {
+        obj2.timer = setInterval(function () {
             moveJumpBlock(obj2);
         }, jump_intv);
     }
-    obj.timer = setInterval(function() {
+    obj.timer = setInterval(function () {
         moveJumpBlock(obj);
     }, jump_intv);
 }
@@ -756,7 +756,7 @@ function clickJumpBtn() {
     if (!is_jump_start) {
         initJump();
         is_jump_start = true;
-        jump_game_timer = setInterval(function() {
+        jump_game_timer = setInterval(function () {
             if ((jump_eclipse + 40) % Math.floor(1000 / jump_intv * gen_obj_intv) === 0) {
                 genJumpBlock();
             }
@@ -773,7 +773,7 @@ function clickJumpBtn() {
         return;
     }
     is_jump = true;
-    jump_jump_timer = setInterval(function() {
+    jump_jump_timer = setInterval(function () {
         // console.log(jump_player.offsetTop - jump_speed, jump_stage.offsetHeight - jump_player.offsetHeight);
         if (jump_player.offsetTop - jump_speed > jump_stage.offsetHeight - jump_player.offsetHeight) {
             jump_player.style.bottom = '0px';
@@ -1522,7 +1522,7 @@ function loadMeSpeak(text) {
     me_speak.style.display = 'flex';
 }
 
-window.onload = function() {
+window.onload = function () {
     formatDialogs();
     formatShici();
     formatMusics();
@@ -2046,7 +2046,6 @@ function initEventVars() {
  * type==-3，为特殊事件；[type, function]
  * type==-4，为结局；
  */
-
 const dialogs = {
     "A": [
         [-2, 'A1']

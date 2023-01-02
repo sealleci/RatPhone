@@ -38,36 +38,42 @@ body {
         -webkit-background-clip: text;
         /*background-clip: text;*/
     }
+
     10% {
         color: transparent;
         background-image: linear-gradient(72deg, black, white);
         -webkit-background-clip: text;
         /*background-clip: text;*/
     }
+
     20% {
         color: transparent;
         background-image: linear-gradient(144deg, black, white);
         -webkit-background-clip: text;
         /*background-clip: text;*/
     }
+
     30% {
         color: transparent;
         background-image: linear-gradient(216deg, black, white);
         -webkit-background-clip: text;
         /*background-clip: text;*/
     }
+
     40% {
         color: transparent;
         background-image: linear-gradient(288deg, black, white);
         -webkit-background-clip: text;
         /*background-clip: text;*/
     }
+
     50% {
         color: transparent;
         background-image: linear-gradient(360deg, black, white);
         -webkit-background-clip: text;
         /*background-clip: text;*/
     }
+
     60% {
         color: transparent;
         background-image: linear-gradient(360deg, black, white 80%);
@@ -75,6 +81,7 @@ body {
         /*background-clip: text;*/
         text-shadow: 0 0 8px rgba(255, 255, 255, .2);
     }
+
     65% {
         color: transparent;
         background-image: linear-gradient(360deg, black, white 60%);
@@ -82,6 +89,7 @@ body {
         /*background-clip: text;*/
         text-shadow: 0 0 8px rgba(255, 255, 255, .4);
     }
+
     70% {
         color: transparent;
         background-image: linear-gradient(360deg, black, white 40%);
@@ -89,6 +97,7 @@ body {
         /*background-clip: text;*/
         text-shadow: 0 0 8px rgba(255, 255, 255, .4);
     }
+
     75% {
         color: transparent;
         background-image: linear-gradient(360deg, black, white 20%);
@@ -96,18 +105,23 @@ body {
         /*background-clip: text;*/
         text-shadow: 0 0 8px rgba(255, 255, 255, .8);
     }
+
     80% {
         text-shadow: 0 0 8px rgba(255, 255, 255, .6);
     }
+
     85% {
         text-shadow: 0 0 8px rgba(255, 255, 255, .4);
     }
+
     90% {
         text-shadow: 0 0 8px rgba(255, 255, 255, .2);
     }
+
     90.1% {
         color: white;
     }
+
     100% {
         color: white;
     }
@@ -591,22 +605,27 @@ body {
         top: 0;
         opacity: 1;
     }
+
     44.4% {
         top: 0;
         opacity: 1;
     }
+
     44.41% {
         top: -20px;
         opacity: 0;
     }
+
     94.4% {
         top: 20px;
         opacity: 0;
     }
+
     94.5% {
         top: 20px;
         opacity: 1;
     }
+
     100% {
         top: 0;
         opacity: 1;
@@ -623,22 +642,27 @@ body {
         opacity: 1;
         ;
     }
+
     44.4% {
         top: 0;
         opacity: 1;
     }
+
     50% {
         top: -20px;
         opacity: 1;
     }
+
     94.4% {
         top: -20px;
         opacity: 1;
     }
+
     94.41% {
         top: 0;
         opacity: 0;
     }
+
     100% {
         top: 0;
         opacity: 1;
@@ -653,9 +677,11 @@ body {
     0% {
         margin-top: 0;
     }
+
     50% {
         margin-top: 30px;
     }
+
     100% {
         margin-top: 0;
     }
@@ -665,9 +691,11 @@ body {
     0% {
         bottom: 0;
     }
+
     50% {
         bottom: 30px;
     }
+
     100% {
         bottom: 0;
     }
@@ -714,9 +742,9 @@ body {
 .avatar {
     display: flex;
     justify-content: center;
-    width: 50px;
-    height: 50px;
-    margin: 8px;
+    width: 45px;
+    height: 45px;
+    margin: 6px 8px;
     border-radius: 50%;
 }
 
@@ -728,7 +756,7 @@ body {
 
 .friend-chat>.avatar>div:nth-child(1) {
     position: absolute;
-    top: 10px;
+    top: 8px;
     left: 5px;
     width: 15px;
     height: 15px;
@@ -738,7 +766,7 @@ body {
 
 .friend-chat>.avatar>div:nth-child(2) {
     position: absolute;
-    top: 10px;
+    top: 8px;
     right: 5px;
     width: 15px;
     height: 15px;
@@ -748,9 +776,9 @@ body {
 
 .friend-chat>.avatar>div:nth-child(3) {
     position: absolute;
-    top: 16px;
-    width: 26px;
-    height: 26px;
+    top: 12px;
+    width: 25px;
+    height: 25px;
     border-radius: 50%;
     background-color: white;
 }
@@ -772,7 +800,7 @@ body {
 
 .me-chat>.avatar::before {
     font-size: 25px;
-    line-height: 50px;
+    line-height: 45px;
     content: "我";
     color: white;
 }
@@ -782,6 +810,7 @@ body {
         left: -20px;
         opacity: 0;
     }
+
     100% {
         left: 0;
         opacity: 1;
@@ -793,6 +822,7 @@ body {
         right: -20px;
         opacity: .6;
     }
+
     100% {
         right: 0;
         opacity: 1;
@@ -818,7 +848,7 @@ body {
     min-width: 15px;
     max-width: 230px;
     min-height: 40px;
-    margin: 8px 12px 8px 12px;
+    margin: 6px 12px;
     padding: 5px 10px;
     -webkit-user-select: text;
     -moz-user-select: text;
@@ -946,12 +976,15 @@ body {
     0% {
         opacity: 1;
     }
+
     50% {
         opacity: 1;
     }
+
     50.01% {
         opacity: 0;
     }
+
     100% {
         opacity: 0;
     }
@@ -1014,6 +1047,7 @@ body {
     0% {
         top: 50px;
     }
+
     100% {
         top: 0;
     }
@@ -1497,6 +1531,7 @@ svg {
         transform: scale(.4, .4);
         opacity: .4;
     }
+
     100% {
         transform: scale(1.0, 1.0);
         opacity: 1;
@@ -1508,6 +1543,7 @@ svg {
         transform: scale(1.0, 1.0);
         opacity: 1;
     }
+
     100% {
         transform: scale(.4, .4);
         opacity: .4;
@@ -1699,6 +1735,7 @@ svg {
         top: 0;
         opacity: 1;
     }
+
     100% {
         top: -50px;
         opacity: .25;
@@ -1960,18 +1997,23 @@ svg {
     0% {
         opacity: 1;
     }
+
     32.99% {
         opacity: 1;
     }
+
     33% {
         opacity: .4;
     }
+
     65.99% {
         opacity: .4;
     }
+
     66% {
         opacity: 1;
     }
+
     100% {
         opacity: 1;
     }
@@ -2052,15 +2094,19 @@ svg {
     0% {
         top: 0;
     }
+
     25% {
         top: 3px;
     }
+
     50% {
         top: 0;
     }
+
     75% {
         top: -3px;
     }
+
     100% {
         top: 0;
     }
@@ -2560,6 +2606,7 @@ svg {
     0% {
         left: 125px;
     }
+
     100% {
         left: -188px;
     }
@@ -2757,12 +2804,7 @@ svg {
     left: 45px;
 }
 
-#rat-formula>div:nth-child(5) {
-    position: absolute;
-    top: 39px;
-    left: 62px;
-    width: 47px;
-    height: 28px;
+#rat-formula>div:nth-child(4)>span {
     border: 2px solid rgba(255, 0, 0, .6);
     border-radius: 10px;
 }
@@ -2785,9 +2827,11 @@ svg {
     #watch {
         left: 350px;
     }
+
     #block-tree {
         right: 350px;
     }
+
     #rat-note {
         left: 350px;
     }
@@ -2797,9 +2841,11 @@ svg {
     #watch {
         left: 350px;
     }
+
     #block-tree {
         right: 350px;
     }
+
     #rat-note {
         left: 350px;
     }
@@ -2810,14 +2856,17 @@ svg {
         width: 500px;
         height: 1400px;
     }
+
     #watch {
         top: 920px;
         left: 45px;
     }
+
     #block-tree {
         top: 770px;
         right: 45px;
     }
+
     #rat-note {
         top: 770px;
         left: 45px;
