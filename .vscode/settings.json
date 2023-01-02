@@ -1,0 +1,13 @@
+{
+    "less.compile": {
+        "sourceMap": true,
+        "relativeUrls": false,
+        "out": "${workspaceRoot}/css/"
+    },
+    "liveServer.settings.ignoreFiles": [
+        ".vscode/**",
+        "**/*.less",
+        "**/*.ts"
+    ],
+    "liveServer.settings.wait": 200
+}

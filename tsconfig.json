@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "module": "CommonJS",
+        "target": "ES6",
+        "strict": true,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "pretty": true,
+        "declaration": true,
+        "noEmitOnError": true,
+        "noErrorTruncation": true,
+        "declarationDir": "./js",
+        "outDir": "./js",
+        "sourceMap": true,
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "node_modules/*"
+            ]
+        }
+    },
+    "include": [
+        "./ts/**/*"
+    ]
+}
