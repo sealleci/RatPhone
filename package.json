@@ -2,9 +2,10 @@
     "name": "rat_phone",
     "version": "0.0.1",
     "description": "A little phone chat game.",
+    "type": "module",
     "scripts": {
         "build": "tsc",
-        "style": "node ./script/compile_less.js",
+        "style": "node ./script/less.js",
         "start": "npm run build && npm run style"
     },
     "author": "sealleci",
