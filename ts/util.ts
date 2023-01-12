@@ -36,6 +36,34 @@ function rangeRandom(min: number, max?: number): number {
 }
 
 /**
+ * Add the prefix to the given string to reach the target length.
+ * @param targetLength The expected length of string after padding.
+ * @param padString The prefix for padding.
+ */
+function padLeft(text: string, targetLength: number, padString: string): string {
+    let padding = ''
+    while (text.length + padding.length < targetLength) {
+        padding += padString.substring(0,
+            Math.min(padString.length, targetLength - (text.length + padding.length)))
+    }
+    return padding + text
+}
+
+/**
+ * Add the suffix to the given string to reach the target length.
+ * @param targetLength The expected length of string after padding.
+ * @param padString The suffix for padding.
+ */
+function padRight(text: string, targetLength: number, padString: string): string {
+    let padding = ''
+    while (text.length + padding.length < targetLength) {
+        padding += padString.substring(0,
+            Math.min(padString.length, targetLength - (text.length + padding.length)))
+    }
+    return text + padding
+}
+
+/**
  * Remove all chidlren elements from the given element.
  */
 function removeChildren(element: HTMLElement) {
@@ -75,4 +103,5 @@ function removeClass(element: HTMLElement, class_name: string) {
 }
 
 export { sleep, rangeRandom }
+export { padLeft, padRight }
 export { removeChildren, toggleClass, addClass, removeClass }
