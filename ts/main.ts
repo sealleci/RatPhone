@@ -81,11 +81,17 @@ class ClockApp implements WatchApp {
     }
 }
 
-type JumpGameObject = {
+type JumpGameCollisionObject = {
     x: number
     y: number
     w: number
     h: number
+}
+
+interface JumpGameBlock {
+    element: HTMLElement
+    timer: number | undefined
+    is_pass: boolean
 }
 
 class JumpGameApp implements WatchApp {
@@ -130,7 +136,7 @@ class JumpGameApp implements WatchApp {
         }
     }
 
-    static isJumpCollision(obj1: JumpGameObject, obj2: JumpGameObject): boolean {
+    static isJumpCollision(obj1: JumpGameCollisionObject, obj2: JumpGameCollisionObject): boolean {
         return !(obj1.x >= obj2.x + obj2.w ||
             obj2.x >= obj1.x + obj1.w ||
             obj1.y + obj1.h <= obj2.y ||
@@ -138,7 +144,7 @@ class JumpGameApp implements WatchApp {
     }
 
     checkJumpCollision(): boolean {
-        let obj_player: JumpGameObject = {
+        let obj_player: JumpGameCollisionObject = {
             x: this.jump_player.offsetLeft + this.jump_player.clientLeft,
             y: this.jump_player.offsetTop + this.jump_player.clientTop,
             w: this.jump_player.clientWidth,
@@ -147,7 +153,7 @@ class JumpGameApp implements WatchApp {
         let objs = document.querySelectorAll('#jump-objs>.jump-obj') as NodeListOf<HTMLElement>
         let result = false
         for (let i = 0; i < objs.length; ++i) {
-            let obj_block: JumpGameObject = {
+            let obj_block: JumpGameCollisionObject = {
                 x: objs[i].offsetLeft,
                 y: objs[i].offsetTop,
                 w: objs[i].clientWidth,
@@ -158,6 +164,64 @@ class JumpGameApp implements WatchApp {
             }
         }
         return result
+    }
+
+    moveJumpBlock(obj: JumpGameBlock) {
+        // TODO: 建造一个Obj类
+        obj.element.style.right = `${parseInt(obj.element.style.right) + 6}px`
+        if (obj.element.offsetLeft < -obj.element.clientWidth) {
+            clearInterval(obj.timer)
+            this.jump_street.removeChild(obj.element)
+        } else {
+            if (obj.element.offsetLeft + obj.element.clientWidth <=
+                this.jump_player.offsetLeft + this.jump_player.clientLeft &&
+                !obj.is_pass) {
+                this.updateJumpCurScore(this.jump_cur_score + 1)
+                obj.is_pass = true
+            }
+        }
+    }
+
+    genJumpBlock() {
+        const obj: HTMLElement = document.createElement('div');
+        let obj2: HTMLElement | null = null;
+        let obj3: HTMLElement | null = null;
+        const r1 = rangeRandom(0, 40);
+        const r2 = rangeRandom(0, 20);
+        obj.className = 'jump-obj';
+        obj.style.right = '15px';
+        obj.is_pass = false;
+        this.jump_street.append(obj);
+        if (r1 >= 30) {
+            obj2 = document.createElement('div');
+            obj2.className = 'jump-obj';
+            obj2.is_pass = true;
+            obj2.style.right = '15px';
+            obj2.style.bottom = `${obj.clientHeight}px`;
+            this.jump_street.append(obj2);
+            if (r2 > 10) {
+                obj3 = document.createElement('div');
+                obj3.className = 'jump-obj';
+                obj3.is_pass = true;
+                obj3.style.right = `${15 + obj.clientWidth}px`;
+                obj3.style.bottom = '0px';
+                this.jump_street.append(obj3);
+            }
+        }
+        if (r1 >= 30 && r2 > 10 && obj3) {
+            obj3.timer = setInterval(() => {
+                this.moveJumpBlock(obj3);
+            }, this.jump_intv);
+
+        }
+        if (r1 >= 30 && obj2) {
+            obj2.timer = setInterval(() => {
+                this.moveJumpBlock(obj2);
+            }, this.jump_intv);
+        }
+        obj.timer = setInterval(() => {
+            this.moveJumpBlock(obj);
+        }, this.jump_intv);
     }
 }
 
