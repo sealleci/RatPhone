@@ -30,48 +30,50 @@ class ClockApp implements WatchApp {
     private static HANZI_NUMBERS: readonly string[]
 
     constructor() {
-        ClockApp.HANZI_NUMBERS = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+        ClockApp.HANZI_NUMBERS =
+            ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
     }
 
     static convertNumToHanzi(num: number): string {
         if (num >= 0 && num <= 10) {
             return ClockApp.HANZI_NUMBERS[num];
         } else if (num <= 19) {
-            return '十' + ClockApp.HANZI_NUMBERS[num % 10];
+            return '十' + ClockApp.HANZI_NUMBERS[num % 10]
         } else if (num === 20) {
             return '二十';
         } else if (num <= 29) {
-            return '廿' + ClockApp.HANZI_NUMBERS[num % 20];
+            return '廿' + ClockApp.HANZI_NUMBERS[num % 20]
         } else if (num === 30) {
             return '三十';
         } else if (num <= 31) {
-            return '卅' + ClockApp.HANZI_NUMBERS[num % 30];
+            return '卅' + ClockApp.HANZI_NUMBERS[num % 30]
         } else {
-            return '';
+            return ''
         }
     }
 
     static convertNumToXingqi(num: number): string {
         if (num === 0) {
-            return '日';
+            return '日'
         } else {
-            return ClockApp.convertNumToHanzi(num);
+            return ClockApp.convertNumToHanzi(num)
         }
     }
     tick() {
         // TODO: 手机和手表的时钟应该分开，天气的随日期更换功能应该自己实现
-        const date = new Date();
-        const cur_h = padLeft(date.getHours().toString(), 2, '0');
-        const cur_m = padLeft(date.getMinutes().toString(), 2, '0');
-        const cur_mon = ClockApp.convertNumToHanzi(date.getMonth() + 1);
-        const cur_date = ClockApp.convertNumToHanzi(date.getDate());
+        const date = new Date()
+        const cur_h = padLeft(date.getHours().toString(), 2, '0')
+        const cur_m = padLeft(date.getMinutes().toString(), 2, '0')
+        const cur_mon = ClockApp.convertNumToHanzi(date.getMonth() + 1)
+        const cur_date = ClockApp.convertNumToHanzi(date.getDate())
 
-        document.querySelector('#cur-time')!.innerHTML = `${cur_h}:${cur_m}`;
-        document.querySelector('#watch-time>span:nth-child(1)')!.textContent = cur_h;
-        document.querySelector('#watch-time>span:nth-child(3)')!.textContent = cur_m;
+        document.querySelector('#cur-time')!.innerHTML = `${cur_h}:${cur_m}`
+        document.querySelector('#watch-time>span:nth-child(1)')!.textContent = cur_h
+        document.querySelector('#watch-time>span:nth-child(3)')!.textContent = cur_m
         document.querySelector('#watch-date')!.textContent =
-            `${cur_mon}月${cur_date}日周${ClockApp.convertNumToXingqi(date.getDay())}`;
-        document.querySelector('#wth-date')!.textContent = `${date.getMonth() + 1}月${date.getDate()}日`;
+            `${cur_mon}月${cur_date}日周${ClockApp.convertNumToXingqi(date.getDay())}`
+        document.querySelector('#wth-date')!.textContent =
+            `${date.getMonth() + 1}月${date.getDate()}日`
         // if (this.pre_date !== null) {
         //     if (this.pre_date.getMonth() !== date.getMonth() &&
         //         this.pre_date.getDate() !== date.getDate()) {
@@ -129,14 +131,17 @@ class JumpGameApp implements WatchApp {
 
     updateJumpCurScore(score: number) {
         this.jump_cur_score = score
-        document.querySelector('#jump-score>span:nth-child(1)')!.textContent = score.toString()
+        document.querySelector('#jump-score>span:nth-child(1)')!.textContent =
+            score.toString()
         if (this.jump_cur_score > this.jump_high_score) {
-            this.jump_high_score = this.jump_cur_score;
-            document.querySelector('#jump-score>span:nth-child(2)')!.textContent = this.jump_high_score.toString();
+            this.jump_high_score = this.jump_cur_score
+            document.querySelector('#jump-score>span:nth-child(2)')!.textContent =
+                this.jump_high_score.toString()
         }
     }
 
-    static isJumpCollision(obj1: JumpGameCollisionObject, obj2: JumpGameCollisionObject): boolean {
+    static isJumpCollision(obj1: JumpGameCollisionObject,
+        obj2: JumpGameCollisionObject): boolean {
         return !(obj1.x >= obj2.x + obj2.w ||
             obj2.x >= obj1.x + obj1.w ||
             obj1.y + obj1.h <= obj2.y ||
@@ -144,16 +149,18 @@ class JumpGameApp implements WatchApp {
     }
 
     checkJumpCollision(): boolean {
-        let obj_player: JumpGameCollisionObject = {
+        const obj_player: JumpGameCollisionObject = {
             x: this.jump_player.offsetLeft + this.jump_player.clientLeft,
             y: this.jump_player.offsetTop + this.jump_player.clientTop,
             w: this.jump_player.clientWidth,
             h: this.jump_player.clientHeight
         }
-        let objs = document.querySelectorAll('#jump-objs>.jump-obj') as NodeListOf<HTMLElement>
+        const objs =
+            document.querySelectorAll('#jump-objs>.jump-obj') as NodeListOf<HTMLElement>
         let result = false
-        for (let i = 0; i < objs.length; ++i) {
-            let obj_block: JumpGameCollisionObject = {
+
+        for (let i = 0; i < objs.length; i += 1) {
+            const obj_block: JumpGameCollisionObject = {
                 x: objs[i].offsetLeft,
                 y: objs[i].offsetTop,
                 w: objs[i].clientWidth,
@@ -163,12 +170,14 @@ class JumpGameApp implements WatchApp {
                 result = true
             }
         }
+
         return result
     }
 
     moveJumpBlock(obj: JumpGameBlock) {
         // TODO: 建造一个Obj类
         obj.element.style.right = `${parseInt(obj.element.style.right) + 6}px`
+
         if (obj.element.offsetLeft < -obj.element.clientWidth) {
             clearInterval(obj.timer)
             this.jump_street.removeChild(obj.element)
@@ -183,44 +192,120 @@ class JumpGameApp implements WatchApp {
     }
 
     genJumpBlock() {
-        const obj: HTMLElement = document.createElement('div');
-        let obj2: HTMLElement | null = null;
-        let obj3: HTMLElement | null = null;
-        const r1 = rangeRandom(0, 40);
-        const r2 = rangeRandom(0, 20);
-        obj.className = 'jump-obj';
-        obj.style.right = '15px';
-        obj.is_pass = false;
-        this.jump_street.append(obj);
+        // TODO: 可调概率
+        // TODO: 把timer存到自定义属性里
+        const block1: JumpGameBlock = {
+            element: document.createElement('div'),
+            timer: undefined,
+            is_pass: false
+        }
+        const inactive_blocks: JumpGameBlock[] = []
+        const r1 = rangeRandom(0, 40)
+        const r2 = rangeRandom(0, 20)
+
+        block1.element.className = 'jump-obj'
+        block1.element.style.right = '15px'
+        this.jump_street.append(block1.element)
+        inactive_blocks.push(block1)
+
         if (r1 >= 30) {
-            obj2 = document.createElement('div');
-            obj2.className = 'jump-obj';
-            obj2.is_pass = true;
-            obj2.style.right = '15px';
-            obj2.style.bottom = `${obj.clientHeight}px`;
-            this.jump_street.append(obj2);
+            const block2: JumpGameBlock = {
+                element: document.createElement('div'),
+                timer: undefined,
+                is_pass: true
+            }
+            block2.element.className = 'jump-obj'
+            block2.element.style.right = '15px'
+            block2.element.style.bottom = `${block1.element.clientHeight}px`
+            this.jump_street.append(block2.element)
+            inactive_blocks.push(block2)
+
             if (r2 > 10) {
-                obj3 = document.createElement('div');
-                obj3.className = 'jump-obj';
-                obj3.is_pass = true;
-                obj3.style.right = `${15 + obj.clientWidth}px`;
-                obj3.style.bottom = '0px';
-                this.jump_street.append(obj3);
+                const block3: JumpGameBlock = {
+                    element: document.createElement('div'),
+                    timer: undefined,
+                    is_pass: true
+                }
+                block3.element.className = 'jump-obj'
+                block3.element.style.right = `${15 + block1.element.clientWidth}px`
+                block3.element.style.bottom = '0px'
+                this.jump_street.append(block3.element)
+                inactive_blocks.push(block3)
             }
         }
-        if (r1 >= 30 && r2 > 10 && obj3) {
-            obj3.timer = setInterval(() => {
-                this.moveJumpBlock(obj3);
-            }, this.jump_intv);
 
+        for (const block of inactive_blocks) {
+            block.timer = setInterval(() => {
+                this.moveJumpBlock(block)
+            }, this.jump_intv)
         }
-        if (r1 >= 30 && obj2) {
-            obj2.timer = setInterval(() => {
-                this.moveJumpBlock(obj2);
+    }
+
+    initJump() {
+        // TODO: 把timer存到自定义属性里
+        this.is_jump_start = false
+        document.querySelectorAll('#jump-objs>.jump-obj').forEach((obj) => {
+            clearInterval(obj.timer)
+        });
+        removeChildren(document.querySelector('#jump-objs'))
+        clearInterval(this.jump_game_timer)
+        clearInterval(this.jump_jump_timer)
+        this.is_jump = false
+        updateJumpCurScore(0)
+        this.jump_speed = this.jump_max_speed
+        this.jump_eclipse = 0
+        this.jump_player.style.bottom = '0px'
+        document.querySelector('#jump-btn')!.textContent = '启'
+        document.querySelector('#jump-bg')!.classList.remove('jump-bg-anm-stop')
+        document.querySelector('#jump-bg')!.classList.remove('jump-bg-anm')
+    }
+
+    deadJump() {
+        // TODO: 把timer存到自定义属性里
+        this.is_jump_start = false
+        document.querySelectorAll('#jump-objs>.jump-obj').forEach((obj) => {
+            clearInterval(obj.timer)
+        })
+        clearInterval(this.jump_game_timer)
+        clearInterval(this.jump_jump_timer)
+        document.querySelector('#jump-btn')!.textContent = '启'
+        document.querySelector('#jump-bg')!.classList.add('jump-bg-anm-stop')
+    }
+
+    clickJumpBtn() {
+        if (!this.is_jump_start) {
+            this.initJump()
+            this.is_jump_start = true
+            this.jump_game_timer = setInterval(() => {
+                if ((this.jump_eclipse + 40) %
+                    Math.floor(1000 / this.jump_intv * this.gen_obj_intv) === 0) {
+                    this.genJumpBlock()
+                }
+                this.jump_eclipse += 1
+                if (this.checkJumpCollision()) {
+                    this.deadJump();
+                }
             }, this.jump_intv);
+            document.querySelector('#jump-btn')!.textContent = '跳';
+            document.querySelector('#jump-bg')!.classList.add('jump-bg-anm');
+            return;
         }
-        obj.timer = setInterval(() => {
-            this.moveJumpBlock(obj);
+        if (this.is_jump) {
+            return;
+        }
+        this.is_jump = true;
+        this.jump_jump_timer = setInterval(() => {
+            if (this.jump_player.offsetTop - this.jump_speed >
+                this.jump_stage.offsetHeight - this.jump_player.offsetHeight) {
+                this.jump_player.style.bottom = '0px';
+                this.jump_speed = this.jump_max_speed;
+                this.is_jump = false;
+                clearInterval(this.jump_jump_timer);
+            } else {
+                this.jump_player.style.bottom =
+                    `${parseInt(this.jump_player.style.bottom) + this.jump_speed}px`;
+                this.jump_speed -= 1;
+            }
         }, this.jump_intv);
     }
 }
