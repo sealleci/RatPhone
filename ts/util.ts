@@ -18,8 +18,8 @@ function sleep(ms: number) {
  * 
  * Usage:
  * ``` js
- * rangeRandom(5) // i in [0, 5)
- * rangeRandom(1, 10) // i in [1, 10]
+ * rangeRandom(5) // value in [0, 5)
+ * rangeRandom(1, 10) // value in [1, 10]
  * ```
  */
 function rangeRandom(min: number, max?: number): number {

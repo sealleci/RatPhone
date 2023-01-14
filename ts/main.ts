@@ -97,63 +97,63 @@ interface JumpGameBlock {
 }
 
 class JumpGameApp implements WatchApp {
-    private jump_player: HTMLElement
-    private jump_stage: HTMLElement
-    private jump_street: HTMLElement
-    private is_jump: boolean
-    private is_jump_start: boolean
-    private jump_intv: number
-    private jump_game_timer: number | undefined
-    private jump_jump_timer: number | undefined
-    private jump_cur_score: number
-    private jump_high_score: number
-    private jump_max_speed: number
-    private jump_speed: number
-    private jump_eclipse: number
-    private gen_obj_intv: number
+    private player: HTMLElement
+    private stage: HTMLElement
+    private lane: HTMLElement
+    private is_jumping: boolean
+    private is_started: boolean
+    private moving_intv: number
+    private gen_intv: number
+    private game_timer: number | undefined
+    private jump_timer: number | undefined
+    private cur_score: number
+    private high_score: number
+    private max_speed: number
+    private cur_speed: number
+    private eclipse: number
 
     constructor() {
-        this.jump_player = document.querySelector('#jump-player')!
-        this.jump_stage = document.querySelector('#jump-stage')!
-        this.jump_street = document.querySelector('#jump-objs')!
-        this.is_jump = false
-        this.is_jump_start = false
-        this.jump_intv = 40
-        this.jump_game_timer = undefined
-        this.jump_jump_timer = undefined
-        this.jump_cur_score = 0
-        this.jump_high_score = 0
-        this.jump_max_speed = 11
-        this.jump_speed = this.jump_max_speed
-        this.jump_eclipse = 0
-        this.gen_obj_intv = 1.5
+        this.player = document.querySelector('#jump-player')!
+        this.stage = document.querySelector('#jump-stage')!
+        this.lane = document.querySelector('#jump-objs')!
+        this.is_jumping = false
+        this.is_started = false
+        this.moving_intv = 40
+        this.gen_intv = 1.5
+        this.game_timer = undefined
+        this.jump_timer = undefined
+        this.cur_score = 0
+        this.high_score = 0
+        this.max_speed = 11
+        this.cur_speed = this.max_speed
+        this.eclipse = 0
     }
 
-    updateJumpCurScore(score: number) {
-        this.jump_cur_score = score
+    updateScore(score: number) {
+        this.cur_score = score
         document.querySelector('#jump-score>span:nth-child(1)')!.textContent =
             score.toString()
-        if (this.jump_cur_score > this.jump_high_score) {
-            this.jump_high_score = this.jump_cur_score
+        if (this.cur_score > this.high_score) {
+            this.high_score = this.cur_score
             document.querySelector('#jump-score>span:nth-child(2)')!.textContent =
-                this.jump_high_score.toString()
+                this.high_score.toString()
         }
     }
 
-    static isJumpCollision(obj1: JumpGameCollisionObject,
-        obj2: JumpGameCollisionObject): boolean {
-        return !(obj1.x >= obj2.x + obj2.w ||
-            obj2.x >= obj1.x + obj1.w ||
-            obj1.y + obj1.h <= obj2.y ||
-            obj2.y + obj2.h <= obj1.y)
-    }
+    checkCollision(): boolean {
+        function isCollision(obj1: JumpGameCollisionObject,
+            obj2: JumpGameCollisionObject): boolean {
+            return !(obj1.x >= obj2.x + obj2.w ||
+                obj2.x >= obj1.x + obj1.w ||
+                obj1.y + obj1.h <= obj2.y ||
+                obj2.y + obj2.h <= obj1.y)
+        }
 
-    checkJumpCollision(): boolean {
         const obj_player: JumpGameCollisionObject = {
-            x: this.jump_player.offsetLeft + this.jump_player.clientLeft,
-            y: this.jump_player.offsetTop + this.jump_player.clientTop,
-            w: this.jump_player.clientWidth,
-            h: this.jump_player.clientHeight
+            x: this.player.offsetLeft + this.player.clientLeft,
+            y: this.player.offsetTop + this.player.clientTop,
+            w: this.player.clientWidth,
+            h: this.player.clientHeight
         }
         const objs =
             document.querySelectorAll('#jump-objs>.jump-obj') as NodeListOf<HTMLElement>
@@ -166,7 +166,7 @@ class JumpGameApp implements WatchApp {
                 w: objs[i].clientWidth,
                 h: objs[i].clientHeight
             }
-            if (JumpGameApp.isJumpCollision(obj_player, obj_block)) {
+            if (isCollision(obj_player, obj_block)) {
                 result = true
             }
         }
@@ -174,41 +174,39 @@ class JumpGameApp implements WatchApp {
         return result
     }
 
-    moveJumpBlock(obj: JumpGameBlock) {
+    moveBlock(obj: JumpGameBlock) {
         // TODO: 建造一个Obj类
         obj.element.style.right = `${parseInt(obj.element.style.right) + 6}px`
 
         if (obj.element.offsetLeft < -obj.element.clientWidth) {
             clearInterval(obj.timer)
-            this.jump_street.removeChild(obj.element)
+            this.lane.removeChild(obj.element)
         } else {
             if (obj.element.offsetLeft + obj.element.clientWidth <=
-                this.jump_player.offsetLeft + this.jump_player.clientLeft &&
+                this.player.offsetLeft + this.player.clientLeft &&
                 !obj.is_pass) {
-                this.updateJumpCurScore(this.jump_cur_score + 1)
+                this.updateScore(this.cur_score + 1)
                 obj.is_pass = true
             }
         }
     }
 
-    genJumpBlock() {
-        // TODO: 可调概率
-        // TODO: 把timer存到自定义属性里
+    genBlock() {
         const block1: JumpGameBlock = {
             element: document.createElement('div'),
             timer: undefined,
             is_pass: false
         }
         const inactive_blocks: JumpGameBlock[] = []
-        const r1 = rangeRandom(0, 40)
-        const r2 = rangeRandom(0, 20)
+        const proportions: readonly [number, number, number] = [6, 5, 4]
+        const r = rangeRandom(Math.ceil(proportions.reduce((a, b) => a + b, 0)))
 
         block1.element.className = 'jump-obj'
         block1.element.style.right = '15px'
-        this.jump_street.append(block1.element)
+        this.lane.append(block1.element)
         inactive_blocks.push(block1)
 
-        if (r1 >= 30) {
+        if (r >= proportions[0]) {
             const block2: JumpGameBlock = {
                 element: document.createElement('div'),
                 timer: undefined,
@@ -217,96 +215,97 @@ class JumpGameApp implements WatchApp {
             block2.element.className = 'jump-obj'
             block2.element.style.right = '15px'
             block2.element.style.bottom = `${block1.element.clientHeight}px`
-            this.jump_street.append(block2.element)
+            this.lane.append(block2.element)
             inactive_blocks.push(block2)
+        }
 
-            if (r2 > 10) {
-                const block3: JumpGameBlock = {
-                    element: document.createElement('div'),
-                    timer: undefined,
-                    is_pass: true
-                }
-                block3.element.className = 'jump-obj'
-                block3.element.style.right = `${15 + block1.element.clientWidth}px`
-                block3.element.style.bottom = '0px'
-                this.jump_street.append(block3.element)
-                inactive_blocks.push(block3)
+        if (r >= proportions[0] + proportions[1]) {
+            const block3: JumpGameBlock = {
+                element: document.createElement('div'),
+                timer: undefined,
+                is_pass: true
             }
+            block3.element.className = 'jump-obj'
+            block3.element.style.right = `${15 + block1.element.clientWidth}px`
+            block3.element.style.bottom = '0px'
+            this.lane.append(block3.element)
+            inactive_blocks.push(block3)
         }
 
         for (const block of inactive_blocks) {
             block.timer = setInterval(() => {
-                this.moveJumpBlock(block)
-            }, this.jump_intv)
+                this.moveBlock(block)
+            }, this.moving_intv)
+            block.element.setAttribute("timer", block.timer.toString())
         }
     }
 
-    initJump() {
-        // TODO: 把timer存到自定义属性里
-        this.is_jump_start = false
+    init() {
+        this.is_started = false
         document.querySelectorAll('#jump-objs>.jump-obj').forEach((obj) => {
-            clearInterval(obj.timer)
+            clearInterval(parseInt(obj.getAttribute('timer') ?? ''))
         });
-        removeChildren(document.querySelector('#jump-objs'))
-        clearInterval(this.jump_game_timer)
-        clearInterval(this.jump_jump_timer)
-        this.is_jump = false
-        updateJumpCurScore(0)
-        this.jump_speed = this.jump_max_speed
-        this.jump_eclipse = 0
-        this.jump_player.style.bottom = '0px'
+        removeChildren(document.querySelector('#jump-objs')!)
+        clearInterval(this.game_timer)
+        clearInterval(this.jump_timer)
+        this.is_jumping = false
+        this.updateScore(0)
+        this.cur_speed = this.max_speed
+        this.eclipse = 0
+        this.player.style.bottom = '0px'
         document.querySelector('#jump-btn')!.textContent = '启'
         document.querySelector('#jump-bg')!.classList.remove('jump-bg-anm-stop')
         document.querySelector('#jump-bg')!.classList.remove('jump-bg-anm')
     }
 
-    deadJump() {
-        // TODO: 把timer存到自定义属性里
-        this.is_jump_start = false
+    terminate() {
+        this.is_started = false
         document.querySelectorAll('#jump-objs>.jump-obj').forEach((obj) => {
-            clearInterval(obj.timer)
+            clearInterval(parseInt(obj.getAttribute('timer') ?? ''))
         })
-        clearInterval(this.jump_game_timer)
-        clearInterval(this.jump_jump_timer)
+        clearInterval(this.game_timer)
+        clearInterval(this.jump_timer)
         document.querySelector('#jump-btn')!.textContent = '启'
         document.querySelector('#jump-bg')!.classList.add('jump-bg-anm-stop')
     }
 
-    clickJumpBtn() {
-        if (!this.is_jump_start) {
-            this.initJump()
-            this.is_jump_start = true
-            this.jump_game_timer = setInterval(() => {
-                if ((this.jump_eclipse + 40) %
-                    Math.floor(1000 / this.jump_intv * this.gen_obj_intv) === 0) {
-                    this.genJumpBlock()
+    click() {
+        if (!this.is_started) {
+            this.init()
+            this.is_started = true
+            this.game_timer = setInterval(() => {
+                if ((this.eclipse + 40) %
+                    Math.floor(1000 / this.moving_intv * this.gen_intv) === 0) {
+                    this.genBlock()
                 }
-                this.jump_eclipse += 1
-                if (this.checkJumpCollision()) {
-                    this.deadJump();
+                this.eclipse += 1
+                if (this.checkCollision()) {
+                    this.terminate()
                 }
-            }, this.jump_intv);
-            document.querySelector('#jump-btn')!.textContent = '跳';
-            document.querySelector('#jump-bg')!.classList.add('jump-bg-anm');
-            return;
+            }, this.moving_intv)
+            document.querySelector('#jump-btn')!.textContent = '跳'
+            document.querySelector('#jump-bg')!.classList.add('jump-bg-anm')
+            return
         }
-        if (this.is_jump) {
-            return;
+
+        if (this.is_jumping) {
+            return
         }
-        this.is_jump = true;
-        this.jump_jump_timer = setInterval(() => {
-            if (this.jump_player.offsetTop - this.jump_speed >
-                this.jump_stage.offsetHeight - this.jump_player.offsetHeight) {
-                this.jump_player.style.bottom = '0px';
-                this.jump_speed = this.jump_max_speed;
-                this.is_jump = false;
-                clearInterval(this.jump_jump_timer);
+
+        this.is_jumping = true
+        this.jump_timer = setInterval(() => {
+            if (this.player.offsetTop - this.cur_speed >
+                this.stage.offsetHeight - this.player.offsetHeight) {
+                this.player.style.bottom = '0px'
+                this.cur_speed = this.max_speed
+                this.is_jumping = false
+                clearInterval(this.jump_timer)
             } else {
-                this.jump_player.style.bottom =
-                    `${parseInt(this.jump_player.style.bottom) + this.jump_speed}px`;
-                this.jump_speed -= 1;
+                this.player.style.bottom =
+                    `${parseInt(this.player.style.bottom) + this.cur_speed}px`
+                this.cur_speed -= 1
             }
-        }, this.jump_intv);
+        }, this.moving_intv)
     }
 }
 
@@ -333,5 +332,6 @@ const game = new Game()
 
 // Entrance.
 document.addEventListener('DOMContentLoaded', async () => {
-    game.init()
+    game.init();
+    (document.querySelector('#jump-btn')! as HTMLElement).addEventListener('mousedown', () => { })
 })
