@@ -1,5 +1,5 @@
 /**
- * Sleep for given time.
+ * Sleep for the given time.
  * 
  * Usage:
  * ``` js
@@ -14,7 +14,7 @@ function sleep(ms: number) {
 }
 
 /**
- * Return a random integer within given range.
+ * Return a random integer within the given range.
  * 
  * Usage:
  * ``` js
@@ -64,6 +64,21 @@ function padRight(text: string, targetLength: number, padString: string): string
 }
 
 /**
+ * Convernt the given seconds to the time string.
+ * @returns The string presents the time with the "mm:ss" format.
+ * 
+ * Usage:
+ * ``` js
+ * converntSecondsToTime(70) // "01:10"
+ * ```
+ */
+function converntSecondsToTime(seconds: number): string {
+    return `${padLeft(
+        Math.floor(seconds / 60).toString(), 2, '0')}:${padLeft(
+            Math.floor(seconds % 60).toString(), 2, '0')}`
+}
+
+/**
  * Remove all chidlren elements from the given element.
  */
 function removeChildren(element: HTMLElement) {
@@ -103,5 +118,5 @@ function removeClass(element: HTMLElement, class_name: string) {
 }
 
 export { sleep, rangeRandom }
-export { padLeft, padRight }
+export { padLeft, padRight, converntSecondsToTime }
 export { removeChildren, toggleClass, addClass, removeClass }

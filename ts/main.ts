@@ -8,7 +8,7 @@
 // TODO: 适配移动端，包括响应式布局和输入动作
 // TODO: BEM风格的CSS变量名？
 
-import { sleep, rangeRandom, padLeft, removeChildren } from './util.js'
+import { sleep, rangeRandom, padLeft, converntSecondsToTime, removeChildren } from './util.js'
 
 class BlockTree {
 
@@ -46,11 +46,17 @@ class BatteryApp implements IWatchApp {
 class ClockApp implements IWatchApp {
     id: string
     private static HANZI_NUMBERS: readonly string[]
+    private hour_element: HTMLElement
+    private minute_element: HTMLElement
+    private date_element: HTMLElement
 
     constructor() {
         this.id = ''
         ClockApp.HANZI_NUMBERS =
             ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+        this.hour_element = document.querySelector('#watch-time>span:nth-child(1)')!
+        this.minute_element = document.querySelector('#watch-time>span:nth-child(3)')!
+        this.date_element = document.querySelector('#watch-date')!
     }
 
     onEnter() {
@@ -86,6 +92,7 @@ class ClockApp implements IWatchApp {
             return ClockApp.convertNumToHanzi(num)
         }
     }
+
     tick() {
         // TODO: 手机和手表的时钟应该分开，天气的随日期更换功能应该自己实现
         const date = new Date()
@@ -94,13 +101,17 @@ class ClockApp implements IWatchApp {
         const cur_mon = ClockApp.convertNumToHanzi(date.getMonth() + 1)
         const cur_date = ClockApp.convertNumToHanzi(date.getDate())
 
-        document.querySelector('#cur-time')!.innerHTML = `${cur_h}:${cur_m}`
-        document.querySelector('#watch-time>span:nth-child(1)')!.textContent = cur_h
-        document.querySelector('#watch-time>span:nth-child(3)')!.textContent = cur_m
-        document.querySelector('#watch-date')!.textContent =
+        this.hour_element.textContent = cur_h
+        this.minute_element.textContent = cur_m
+        this.date_element.textContent =
             `${cur_mon}月${cur_date}日周${ClockApp.convertNumToXingqi(date.getDay())}`
-        document.querySelector('#wth-date')!.textContent =
-            `${date.getMonth() + 1}月${date.getDate()}日`
+
+        // 手机上的时间
+        // document.querySelector('#cur-time')!.innerHTML = `${cur_h}:${cur_m}`
+        // 天气里的日期
+        // document.querySelector('#wth-date')!.textContent =
+        //     `${date.getMonth() + 1}月${date.getDate()}日`
+        // 天气切换
         // if (this.pre_date !== null) {
         //     if (this.pre_date.getMonth() !== date.getMonth() &&
         //         this.pre_date.getDate() !== date.getDate()) {
@@ -110,7 +121,7 @@ class ClockApp implements IWatchApp {
     }
 }
 
-type JumpGameCollisionObject = {
+interface JumpGameCollisionObject {
     x: number
     y: number
     w: number
@@ -139,6 +150,10 @@ class JumpGameApp implements IWatchApp {
     private max_speed: number
     private cur_speed: number
     private eclipse: number
+    private jump_btn: HTMLElement
+    private cur_score_element: HTMLElement
+    private high_score_element: HTMLElement
+    private bg_element: HTMLElement
 
     constructor() {
         this.id = ''
@@ -156,6 +171,10 @@ class JumpGameApp implements IWatchApp {
         this.max_speed = 11
         this.cur_speed = this.max_speed
         this.eclipse = 0
+        this.jump_btn = document.querySelector('#jump-btn')!
+        this.cur_score_element = document.querySelector('#jump-score>span:nth-child(1)')!
+        this.high_score_element = document.querySelector('#jump-score>span:nth-child(2)')!
+        this.bg_element = document.querySelector('#jump-bg')!
     }
 
     onEnter() {
@@ -168,12 +187,10 @@ class JumpGameApp implements IWatchApp {
 
     updateScore(score: number) {
         this.cur_score = score
-        document.querySelector('#jump-score>span:nth-child(1)')!.textContent =
-            score.toString()
+        this.cur_score_element.textContent = score.toString()
         if (this.cur_score > this.high_score) {
             this.high_score = this.cur_score
-            document.querySelector('#jump-score>span:nth-child(2)')!.textContent =
-                this.high_score.toString()
+            this.high_score_element.textContent = this.high_score.toString()
         }
     }
 
@@ -186,29 +203,29 @@ class JumpGameApp implements IWatchApp {
                 obj2.y + obj2.h <= obj1.y)
         }
 
-        const obj_player: JumpGameCollisionObject = {
+        const player_obj: JumpGameCollisionObject = {
             x: this.player.offsetLeft + this.player.clientLeft,
             y: this.player.offsetTop + this.player.clientTop,
             w: this.player.clientWidth,
             h: this.player.clientHeight
         }
-        const objs =
-            document.querySelectorAll('#jump-objs>.jump-obj') as NodeListOf<HTMLElement>
-        let result = false
+        const blocks =
+            document.querySelectorAll('#jump-objs>.jump-obj') satisfies NodeListOf<HTMLElement>
 
-        for (let i = 0; i < objs.length; i += 1) {
-            const obj_block: JumpGameCollisionObject = {
-                x: objs[i].offsetLeft,
-                y: objs[i].offsetTop,
-                w: objs[i].clientWidth,
-                h: objs[i].clientHeight
+        for (const block of blocks) {
+            const block_obj: JumpGameCollisionObject = {
+                x: block.offsetLeft,
+                y: block.offsetTop,
+                w: block.clientWidth,
+                h: block.clientHeight
             }
-            if (isCollision(obj_player, obj_block)) {
-                result = true
+
+            if (isCollision(player_obj, block_obj)) {
+                return true
             }
         }
 
-        return result
+        return false
     }
 
     moveBlock(obj: JumpGameBlock) {
@@ -281,7 +298,7 @@ class JumpGameApp implements IWatchApp {
         document.querySelectorAll('#jump-objs>.jump-obj').forEach((obj) => {
             clearInterval(parseInt(obj.getAttribute('timer') ?? ''))
         })
-        removeChildren(document.querySelector('#jump-objs')!)
+        removeChildren(this.lane)
         clearInterval(this.game_timer)
         clearInterval(this.jump_timer)
         this.is_jumping = false
@@ -289,9 +306,9 @@ class JumpGameApp implements IWatchApp {
         this.cur_speed = this.max_speed
         this.eclipse = 0
         this.player.style.bottom = '0px'
-        document.querySelector('#jump-btn')!.textContent = '启'
-        document.querySelector('#jump-bg')!.classList.remove('jump-bg-anm-stop')
-        document.querySelector('#jump-bg')!.classList.remove('jump-bg-anm')
+        this.jump_btn.textContent = '启'
+        this.bg_element.classList.remove('jump-bg-anm-stop')
+        this.bg_element.classList.remove('jump-bg-anm')
     }
 
     terminate() {
@@ -301,8 +318,8 @@ class JumpGameApp implements IWatchApp {
         })
         clearInterval(this.game_timer)
         clearInterval(this.jump_timer)
-        document.querySelector('#jump-btn')!.textContent = '启'
-        document.querySelector('#jump-bg')!.classList.add('jump-bg-anm-stop')
+        this.jump_btn.textContent = '启'
+        this.bg_element.classList.add('jump-bg-anm-stop')
     }
 
     click() {
@@ -319,8 +336,9 @@ class JumpGameApp implements IWatchApp {
                     this.terminate()
                 }
             }, this.moving_intv)
-            document.querySelector('#jump-btn')!.textContent = '跳'
-            document.querySelector('#jump-bg')!.classList.add('jump-bg-anm')
+            this.jump_btn.textContent = '跳'
+            this.bg_element.classList.add('jump-bg-anm')
+
             return
         }
 
@@ -345,6 +363,7 @@ class JumpGameApp implements IWatchApp {
     }
 }
 
+// TODO: 触摸事件
 class PetRatApp implements IWatchApp {
     id: string
     private max_tail_deg: number
@@ -423,12 +442,14 @@ class PetRatApp implements IWatchApp {
             'M4 1c2.21 0 4 1.755 4 3.92C8 2.755 9.79 1 12 1s4 1.755 4 3.92c0 3.263-3.234 4.414-7.608 9.608a.513.513 0 0 1-.784 0C3.234 9.334 0 8.183 0 4.92 0 2.755 1.79 1 4 1z')
         heart.append(path)
         this.heart_list.append(heart)
+
         setTimeout(() => {
             this.heart_list.removeChild(heart)
         }, 300)
 
         this.pet_cnt += 1
         this.pet_cnt_display.textContent = this.pet_cnt.toString()
+
         sleep(100).then(() => {
             this.is_locked = false
         })
@@ -468,15 +489,14 @@ class MusicApp implements IWatchApp {
     private is_playing: boolean
     private play_btn: HTMLElement
     private pause_btn: HTMLElement
-    private music_progress_bar: HTMLElement
-    private music_dot: HTMLElement
-    private music_slide: HTMLElement
-    private title_node: HTMLElement
-    private author_node: HTMLElement
-    private duration_node: HTMLElement
-    private cur_duration_node: HTMLElement
-    private progress_node: HTMLElement
-    private music_infos: MusicInfo[]
+    private progress_bar: HTMLElement
+    private progress_dot: HTMLElement
+    private progress_slide: HTMLElement
+    private title_element: HTMLElement
+    private author_element: HTMLElement
+    private duration_element: HTMLElement
+    private cur_duration_element: HTMLElement
+    private music_info: MusicInfo[]
 
     constructor() {
         this.id = ''
@@ -487,15 +507,14 @@ class MusicApp implements IWatchApp {
         this.is_playing = false
         this.play_btn = document.querySelector('#music-go')!
         this.pause_btn = document.querySelector('#music-stop')!
-        this.music_progress_bar = document.querySelector('#music-prog')!
-        this.music_dot = document.querySelector('#music-dot')!
-        this.music_slide = document.querySelector('#music-slide')!
-        this.title_node = document.querySelector('#music-title>span:nth-child(1)')!
-        this.author_node = document.querySelector('#music-title>span:nth-child(2)')!
-        this.duration_node = document.querySelector('#music-time-row>.music-time:nth-child(2)')!
-        this.cur_duration_node = document.querySelector('#music-time-row>.music-time:nth-child(1)')!
-        this.progress_node = document.querySelector('#music-prog')!
-        this.music_infos = []
+        this.progress_bar = document.querySelector('#music-prog')!
+        this.progress_dot = document.querySelector('#music-dot')!
+        this.progress_slide = document.querySelector('#music-slide')!
+        this.title_element = document.querySelector('#music-title>span:nth-child(1)')!
+        this.author_element = document.querySelector('#music-title>span:nth-child(2)')!
+        this.duration_element = document.querySelector('#music-time-row>.music-time:nth-child(2)')!
+        this.cur_duration_element = document.querySelector('#music-time-row>.music-time:nth-child(1)')!
+        this.music_info = []
     }
 
     onEnter() {
@@ -506,31 +525,15 @@ class MusicApp implements IWatchApp {
 
     }
 
-    /**
-     * Convernt the given seconds to the time string.
-     * @returns The string presents the time with the "mm:ss" format.
-     * 
-     * Usage:
-     * ``` js
-     * converntSecondsToTime(70) // "01:10"
-     * ```
-     */
-    static converntSecondsToTime(seconds: number): string {
-        return `${padLeft(
-            Math.floor(seconds / 60).toString(), 2, '0')}:${padLeft(
-                Math.floor(seconds % 60).toString(), 2, '0')}`
-    }
-
     updateCurDuration(duration: number) {
         this.cur_duration = duration
-        this.cur_duration_node.textContent = MusicApp.converntSecondsToTime(this.cur_duration)
+        this.cur_duration_element.textContent = converntSecondsToTime(this.cur_duration)
     }
 
     togglePlayBtn(is_playing: boolean) {
         if (is_playing) {
             this.play_btn.style.display = 'none'
             this.pause_btn.style.display = 'flex'
-
         } else {
             this.play_btn.style.display = 'flex'
             this.pause_btn.style.display = 'none'
@@ -538,17 +541,17 @@ class MusicApp implements IWatchApp {
     }
 
     initMusicProgress() {
-        this.music_progress_bar.style.width = '0px'
-        this.music_dot.style.left = '0px'
+        this.progress_bar.style.width = '0px'
+        this.progress_dot.style.left = '0px'
     }
 
-    loadMusicInfos(index: number) {
+    loadMusicInfo(index: number) {
         this.pauseMusic()
         this.updateCurDuration(0)
-        this.title_node.textContent = this.music_infos[index].title
-        this.author_node.textContent = this.music_infos[index].author
-        this.duration_node.textContent = MusicApp.converntSecondsToTime(this.music_infos[index].len)
-        this.progress_node.style.backgroundColor = this.music_infos[index].color
+        this.title_element.textContent = this.music_info[index].title
+        this.author_element.textContent = this.music_info[index].author
+        this.duration_element.textContent = converntSecondsToTime(this.music_info[index].len)
+        this.progress_bar.style.backgroundColor = this.music_info[index].color
         this.initMusicProgress()
     }
 
@@ -565,24 +568,27 @@ class MusicApp implements IWatchApp {
     }
 
     playTick() {
-        // TODO: musics结构
-        this.updateCurDuration(Math.min(this.cur_duration + 1,
-            this.music_infos[this.cur_index].len))
         const cur_width = Math.floor(this.cur_duration /
-            this.music_infos[this.cur_index].len * this.music_slide.clientWidth)
-        this.music_progress_bar.style.width = `${cur_width}px`
+            this.music_info[this.cur_index].len * this.progress_slide.clientWidth)
+
+        this.updateCurDuration(Math.min(this.cur_duration + 1,
+            this.music_info[this.cur_index].len))
+        this.progress_bar.style.width = `${cur_width}px`
+
         if (cur_width > 8) {
-            this.music_dot.style.left = `${cur_width - 8}px`
+            this.progress_dot.style.left = `${cur_width - 8}px`
         }
-        if (this.cur_duration >= this.music_infos[this.cur_index].len) {
+
+        if (this.cur_duration >= this.music_info[this.cur_index].len) {
             this.pauseMusic()
         }
     }
 
     clickPlayBtn() {
         this.is_playing = !(this.is_playing)
+
         if (this.is_playing) {
-            if (this.cur_duration === this.music_infos[this.cur_index].len) {
+            if (this.cur_duration === this.music_info[this.cur_index].len) {
                 this.updateCurDuration(0)
                 this.initMusicProgress()
             }
@@ -594,31 +600,175 @@ class MusicApp implements IWatchApp {
 
     clickPrevoiusBtn() {
         this.cur_index =
-            (this.cur_index - 1 + this.music_infos.length) % this.music_infos.length
-        this.loadMusicInfos(this.cur_index)
+            (this.cur_index - 1 + this.music_info.length) % this.music_info.length
+        this.loadMusicInfo(this.cur_index)
     }
 
     clickNextBtn() {
         this.cur_index =
-            (this.cur_index + 1 + this.music_infos.length) % this.music_infos.length
-        this.loadMusicInfos(this.cur_index)
+            (this.cur_index + 1 + this.music_info.length) % this.music_info.length
+        this.loadMusicInfo(this.cur_index)
     }
 }
 
-class Phone {
+class ShiciApp implements IWatchApp {
+    id: string
 
+    constructor() {
+        this.id = ''
+    }
+
+    onEnter() {
+
+    }
+
+    onExit() {
+
+    }
+}
+
+class SportApp implements IWatchApp {
+    id: string
+    private cur_bg_color: string
+    private run_colors: string[]
+    private cur_color_index: number
+    private timer: number | undefined
+    private running_intv: number
+    private speed: number
+    private distance: number
+    private tick_cnt: number
+    private elapse: number
+    private is_running: boolean
+    private progress_arc_len: number
+    private pre_degree: number
+    private distance_element: HTMLElement
+    private elapse_element: HTMLElement
+    private progress_color: HTMLElement
+    private progress_bar: HTMLElement
+    private head_dot_wrapper: HTMLElement
+    private tail_dot: HTMLElement
+    private head_dot: HTMLElement
+    private start_btn: HTMLElement
+    private pause_btn: HTMLElement
+
+    constructor() {
+        this.id = ''
+        this.cur_bg_color = 'rgb(100,100,100)'
+        this.run_colors = ['#39A2DB', '#8DE03A', '#39A2DB', '#DB69D2']
+        this.cur_color_index = 0
+        this.timer = undefined
+        this.running_intv = 25
+        this.speed = 0.0005
+        this.distance = 0.0
+        this.tick_cnt = 0
+        this.elapse = 0
+        this.is_running = false
+        this.progress_arc_len = 1.0
+        this.pre_degree = 0
+        this.distance_element = document.querySelector('#run-meter>span:nth-child(1)')!
+        this.elapse_element = document.querySelector('#run-time>span:nth-child(2)')!
+        this.progress_color = document.querySelector('#run-prog-color')!
+        this.progress_bar = document.querySelector('#run-prog')!
+        this.head_dot_wrapper = document.querySelector('#run-prog-color>.edge-cir:nth-child(2)')!
+        this.tail_dot = document.querySelector('#run-prog-color>.edge-cir:nth-child(1)>div')!
+        this.head_dot = document.querySelector('#run-prog-color>.edge-cir:nth-child(2)>div')!
+        this.start_btn = document.querySelector('#run-go')!
+        this.pause_btn = document.querySelector('#run-stop')!
+    }
+
+    onEnter() {
+
+    }
+
+    onExit() {
+
+    }
+
+    updateDistance(distance: number) {
+        this.distance = distance
+        this.distance_element.textContent = this.distance.toFixed(2)
+    }
+
+    updateElapse(elapse: number) {
+        this.elapse = elapse
+        this.elapse_element.textContent = converntSecondsToTime(this.elapse)
+    }
+
+    runTick() {
+        this.updateDistance(this.distance + this.speed)
+        this.tick_cnt += 1
+
+        if (this.tick_cnt % Math.floor(1000 / this.running_intv) === 0) {
+            this.updateElapse(this.elapse + 1)
+            this.tick_cnt = 0
+        }
+
+        const cur_degree = Math.floor(this.distance / this.progress_arc_len * 360) % 360
+
+        if (cur_degree < 180) {
+            this.progress_color.style.backgroundImage = `linear-gradient(${-90 + cur_degree}deg, transparent 50%, ${this.cur_bg_color} 50%),
+                                                        linear-gradient(90deg, ${this.run_colors[this.cur_color_index]} 50%, transparent 50%)`
+        } else {
+            this.progress_color.style.backgroundImage = `linear-gradient(${-90 + cur_degree - 180}deg, transparent 50%, ${this.run_colors[this.cur_color_index]} 50%), 
+                                                        linear-gradient(90deg, ${this.run_colors[this.cur_color_index]} 50%, transparent 50%)`
+        }
+
+        this.head_dot_wrapper.style.transform = `rotate(${cur_degree}deg)`
+
+        if (Math.abs(this.pre_degree - cur_degree) > 180) {
+            this.cur_bg_color = this.run_colors[this.cur_color_index]
+            this.cur_color_index = (this.cur_color_index + 1) % this.run_colors.length
+            this.progress_bar.style.backgroundColor = this.cur_bg_color
+            this.tail_dot.style.backgroundColor = this.run_colors[this.cur_color_index]
+            this.head_dot.style.backgroundColor = this.run_colors[this.cur_color_index]
+            this.progress_color.style.backgroundImage = `linear-gradient(-90deg, transparent 50%, ${this.cur_bg_color} 50%),
+                                                        linear-gradient(90deg, ${this.run_colors[this.cur_color_index]} 50%, transparent 50%)`
+        }
+
+        this.pre_degree = cur_degree
+    }
+
+    startRunning() {
+        this.is_running = true
+        this.timer = setInterval(this.runTick, this.running_intv)
+        this.start_btn.style.display = 'none'
+        this.pause_btn.style.display = 'flex'
+    }
+
+    pauseRunning() {
+        this.is_running = false
+        clearInterval(this.timer)
+        this.start_btn.style.display = 'flex'
+        this.pause_btn.style.display = 'none'
+    }
+
+    clickRunBtn() {
+        this.is_running = !(this.is_running)
+
+        if (this.is_running) {
+            this.startRunning()
+        } else {
+            this.pauseRunning()
+        }
+    }
 }
 
 class Battery {
 
 }
 
+class Phone {
+
+}
+
 class Game {
     constructor() {
     }
+
     init() {
 
     }
+
     tick() {
 
     }
@@ -629,5 +779,5 @@ const game = new Game()
 // Entrance.
 document.addEventListener('DOMContentLoaded', async () => {
     game.init();
-    (document.querySelector('#jump-btn') as HTMLElement).addEventListener('mousedown', () => { })
+    (document.querySelector('#jump-btn')! satisfies HTMLElement).addEventListener('mousedown', () => { })
 })
