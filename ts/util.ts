@@ -22,7 +22,7 @@ function sleep(ms: number) {
  * rangeRandom(1, 10) // value in [1, 10]
  * ```
  */
-function rangeRandom(min: number, max?: number): number {
+function rangeRoll(min: number, max?: number): number {
     if (max === undefined) {
         max = min - 1
         min = 0
@@ -64,15 +64,15 @@ function padRight(text: string, targetLength: number, padString: string): string
 }
 
 /**
- * Convernt the given seconds to the time string.
+ * convert the given seconds to the time string.
  * @returns The string presents the time with the "mm:ss" format.
  * 
  * Usage:
  * ``` js
- * converntSecondsToTime(70) // "01:10"
+ * convertSecondsToTime(70) // "01:10"
  * ```
  */
-function converntSecondsToTime(seconds: number): string {
+function convertSecondsToTime(seconds: number): string {
     return `${padLeft(
         Math.floor(seconds / 60).toString(), 2, '0')}:${padLeft(
             Math.floor(seconds % 60).toString(), 2, '0')}`
@@ -117,6 +117,6 @@ function removeClass(element: HTMLElement, class_name: string) {
     }
 }
 
-export { sleep, rangeRandom }
-export { padLeft, padRight, converntSecondsToTime }
+export { sleep, rangeRoll }
+export { padLeft, padRight, convertSecondsToTime }
 export { removeChildren, toggleClass, addClass, removeClass }

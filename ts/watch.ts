@@ -1,4 +1,4 @@
-import { sleep, rangeRandom, padLeft, converntSecondsToTime, removeChildren } from './util.js'
+import { sleep, rangeRoll, padLeft, convertSecondsToTime, removeChildren } from './util.js'
 
 // TODO: 按钮绑定都放到App的构造函数里
 interface IWatchApp {
@@ -239,7 +239,7 @@ class JumpGameApp implements IWatchApp {
         }
         const inactive_blocks: JumpGameBlock[] = []
         const proportions: readonly [number, number, number] = [6, 5, 4]
-        const r = rangeRandom(Math.ceil(proportions.reduce((a, b) => a + b, 0)))
+        const r = rangeRoll(Math.ceil(proportions.reduce((a, b) => a + b, 0)))
 
         block1.element.className = 'jump-obj'
         block1.element.style.right = '15px'
@@ -512,7 +512,7 @@ class MusicApp implements IWatchApp {
 
     updateCurDuration(duration: number) {
         this.cur_duration = duration
-        this.cur_duration_element.textContent = converntSecondsToTime(this.cur_duration)
+        this.cur_duration_element.textContent = convertSecondsToTime(this.cur_duration)
     }
 
     togglePlayBtn(is_playing: boolean) {
@@ -535,7 +535,7 @@ class MusicApp implements IWatchApp {
         this.updateCurDuration(0)
         this.title_element.textContent = this.music_info[index].title
         this.author_element.textContent = this.music_info[index].author
-        this.duration_element.textContent = converntSecondsToTime(this.music_info[index].len)
+        this.duration_element.textContent = convertSecondsToTime(this.music_info[index].len)
         this.progress_bar.style.backgroundColor = this.music_info[index].color
         this.initMusicProgress()
     }
@@ -644,7 +644,7 @@ class ShiciApp implements IWatchApp {
         }
     }
 
-    clickRandomBtn() {
+    clickRollBtn() {
         let available_indices = []
 
         for (let i = 0; i < this.shici_info.length; i += 1) {
@@ -654,7 +654,7 @@ class ShiciApp implements IWatchApp {
         }
 
         if (available_indices.length !== 0) {
-            const r = rangeRandom(available_indices.length)
+            const r = rangeRoll(available_indices.length)
             this.render(available_indices[r])
             this.masks.push(available_indices[r])
         }
@@ -729,7 +729,7 @@ class SportApp implements IWatchApp {
 
     updateElapse(elapse: number) {
         this.elapse = elapse
-        this.elapse_element.textContent = converntSecondsToTime(this.elapse)
+        this.elapse_element.textContent = convertSecondsToTime(this.elapse)
     }
 
     runTick() {
