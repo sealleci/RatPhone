@@ -1,5 +1,3 @@
-import { Watch } from './watch.js'
-
 class Battery {
 
 }
