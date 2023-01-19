@@ -34,17 +34,17 @@ class BatteryApp implements IWatchApp {
 
 class ClockApp implements IWatchApp {
     id: string
-    private hour_element: HTMLElement
-    private minute_element: HTMLElement
-    private date_element: HTMLElement
+    private hour_elm: HTMLElement
+    private minute_elm: HTMLElement
+    private date_elm: HTMLElement
     private static HANZI_NUMBERS: readonly string[] =
         ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
     constructor() {
         this.id = ''
-        this.hour_element = document.querySelector('#watch-time>span:nth-child(1)')!
-        this.minute_element = document.querySelector('#watch-time>span:nth-child(3)')!
-        this.date_element = document.querySelector('#watch-date')!
+        this.hour_elm = document.querySelector('#watch-time>span:nth-child(1)')!
+        this.minute_elm = document.querySelector('#watch-time>span:nth-child(3)')!
+        this.date_elm = document.querySelector('#watch-date')!
 
     }
 
@@ -91,9 +91,9 @@ class ClockApp implements IWatchApp {
         const cur_mon = ClockApp.convertNumToHanzi(date.getMonth() + 1)
         const cur_date = ClockApp.convertNumToHanzi(date.getDate())
 
-        this.hour_element.textContent = cur_h
-        this.minute_element.textContent = cur_m
-        this.date_element.textContent =
+        this.hour_elm.textContent = cur_h
+        this.minute_elm.textContent = cur_m
+        this.date_elm.textContent =
             `${cur_mon}月${cur_date}日周${ClockApp.convertNumToXingqi(date.getDay())}`
 
         // 手机上的时间
@@ -119,7 +119,7 @@ interface JumpGameCollisionObject {
 }
 
 interface JumpGameBlock {
-    element: HTMLElement
+    elm: HTMLElement
     timer: number | undefined
     is_pass: boolean
 }
@@ -141,9 +141,9 @@ class JumpGameApp implements IWatchApp {
     private cur_speed: number
     private eclipse: number
     private jump_btn: HTMLElement
-    private cur_score_element: HTMLElement
-    private high_score_element: HTMLElement
-    private bg_element: HTMLElement
+    private cur_score_elm: HTMLElement
+    private high_score_elm: HTMLElement
+    private bg_elm: HTMLElement
 
     constructor() {
         this.id = ''
@@ -162,9 +162,9 @@ class JumpGameApp implements IWatchApp {
         this.cur_speed = this.max_speed
         this.eclipse = 0
         this.jump_btn = document.querySelector('#jump-btn')!
-        this.cur_score_element = document.querySelector('#jump-score>span:nth-child(1)')!
-        this.high_score_element = document.querySelector('#jump-score>span:nth-child(2)')!
-        this.bg_element = document.querySelector('#jump-bg')!
+        this.cur_score_elm = document.querySelector('#jump-score>span:nth-child(1)')!
+        this.high_score_elm = document.querySelector('#jump-score>span:nth-child(2)')!
+        this.bg_elm = document.querySelector('#jump-bg')!
     }
 
     onEnter() {
@@ -177,10 +177,10 @@ class JumpGameApp implements IWatchApp {
 
     updateScore(score: number) {
         this.cur_score = score
-        this.cur_score_element.textContent = score.toString()
+        this.cur_score_elm.textContent = score.toString()
         if (this.cur_score > this.high_score) {
             this.high_score = this.cur_score
-            this.high_score_element.textContent = this.high_score.toString()
+            this.high_score_elm.textContent = this.high_score.toString()
         }
     }
 
@@ -218,60 +218,60 @@ class JumpGameApp implements IWatchApp {
         return false
     }
 
-    moveBlock(obj: JumpGameBlock) {
-        obj.element.style.right = `${parseInt(obj.element.style.right) + 6}px`
+    moveBlock(block: JumpGameBlock) {
+        block.elm.style.right = `${parseInt(block.elm.style.right) + 6}px`
 
-        if (obj.element.offsetLeft < -obj.element.clientWidth) {
-            clearInterval(obj.timer)
-            this.lane.removeChild(obj.element)
+        if (block.elm.offsetLeft < -block.elm.clientWidth) {
+            clearInterval(block.timer)
+            this.lane.removeChild(block.elm)
         } else {
-            if (obj.element.offsetLeft + obj.element.clientWidth <=
+            if (block.elm.offsetLeft + block.elm.clientWidth <=
                 this.player.offsetLeft + this.player.clientLeft &&
-                !obj.is_pass) {
+                !block.is_pass) {
                 this.updateScore(this.cur_score + 1)
-                obj.is_pass = true
+                block.is_pass = true
             }
         }
     }
 
     genBlock() {
         const block1: JumpGameBlock = {
-            element: document.createElement('div'),
+            elm: document.createElement('div'),
             timer: undefined,
             is_pass: false
         }
         const inactive_blocks: JumpGameBlock[] = []
-        const proportions: readonly [number, number, number] = [6, 5, 4]
+        const proportions: Tuple<number, 3> = [6, 5, 4]
         const r = rangeRoll(Math.ceil(proportions.reduce((a, b) => a + b, 0)))
 
-        block1.element.className = 'jump-obj'
-        block1.element.style.right = '15px'
-        this.lane.append(block1.element)
+        block1.elm.className = 'jump-obj'
+        block1.elm.style.right = '15px'
+        this.lane.append(block1.elm)
         inactive_blocks.push(block1)
 
         if (r >= proportions[0]) {
             const block2: JumpGameBlock = {
-                element: document.createElement('div'),
+                elm: document.createElement('div'),
                 timer: undefined,
                 is_pass: true
             }
-            block2.element.className = 'jump-obj'
-            block2.element.style.right = '15px'
-            block2.element.style.bottom = `${block1.element.clientHeight}px`
-            this.lane.append(block2.element)
+            block2.elm.className = 'jump-obj'
+            block2.elm.style.right = '15px'
+            block2.elm.style.bottom = `${block1.elm.clientHeight}px`
+            this.lane.append(block2.elm)
             inactive_blocks.push(block2)
         }
 
         if (r >= proportions[0] + proportions[1]) {
             const block3: JumpGameBlock = {
-                element: document.createElement('div'),
+                elm: document.createElement('div'),
                 timer: undefined,
                 is_pass: true
             }
-            block3.element.className = 'jump-obj'
-            block3.element.style.right = `${15 + block1.element.clientWidth}px`
-            block3.element.style.bottom = '0px'
-            this.lane.append(block3.element)
+            block3.elm.className = 'jump-obj'
+            block3.elm.style.right = `${15 + block1.elm.clientWidth}px`
+            block3.elm.style.bottom = '0px'
+            this.lane.append(block3.elm)
             inactive_blocks.push(block3)
         }
 
@@ -279,14 +279,14 @@ class JumpGameApp implements IWatchApp {
             block.timer = setInterval(() => {
                 this.moveBlock(block)
             }, this.moving_intv)
-            block.element.setAttribute("timer", block.timer.toString())
+            block.elm.setAttribute("timer", block.timer.toString())
         }
     }
 
     init() {
         this.is_started = false
-        document.querySelectorAll('#jump-objs>.jump-obj').forEach((obj) => {
-            clearInterval(parseInt(obj.getAttribute('timer') ?? ''))
+        document.querySelectorAll('#jump-objs>.jump-obj').forEach((block_elm) => {
+            clearInterval(parseInt(block_elm.getAttribute('timer') ?? ''))
         })
         removeChildren(this.lane)
         clearInterval(this.game_timer)
@@ -297,19 +297,19 @@ class JumpGameApp implements IWatchApp {
         this.eclipse = 0
         this.player.style.bottom = '0px'
         this.jump_btn.textContent = '启'
-        this.bg_element.classList.remove('jump-bg-anm-stop')
-        this.bg_element.classList.remove('jump-bg-anm')
+        this.bg_elm.classList.remove('jump-bg-anm-stop')
+        this.bg_elm.classList.remove('jump-bg-anm')
     }
 
     terminate() {
         this.is_started = false
-        document.querySelectorAll('#jump-objs>.jump-obj').forEach((obj) => {
-            clearInterval(parseInt(obj.getAttribute('timer') ?? ''))
+        document.querySelectorAll('#jump-objs>.jump-obj').forEach((block_elm) => {
+            clearInterval(parseInt(block_elm.getAttribute('timer') ?? ''))
         })
         clearInterval(this.game_timer)
         clearInterval(this.jump_timer)
         this.jump_btn.textContent = '启'
-        this.bg_element.classList.add('jump-bg-anm-stop')
+        this.bg_elm.classList.add('jump-bg-anm-stop')
     }
 
     clickJumpBtn() {
@@ -327,7 +327,7 @@ class JumpGameApp implements IWatchApp {
                 }
             }, this.moving_intv)
             this.jump_btn.textContent = '跳'
-            this.bg_element.classList.add('jump-bg-anm')
+            this.bg_elm.classList.add('jump-bg-anm')
 
             return
         }
@@ -446,10 +446,10 @@ class PetRatApp implements IWatchApp {
 
 class WeatherApp implements IWatchApp {
     id: string
-    private day_icon_element: HTMLElement
-    private night_icon_element: HTMLElement
-    private dat_temp_element: HTMLElement
-    private night_temp_element: HTMLElement
+    private day_icon_elm: HTMLElement
+    private night_icon_elm: HTMLElement
+    private dat_temp_elm: HTMLElement
+    private night_temp_elm: HTMLElement
     private pre_date: Date
     private static SVG_ICONS: { day: Tuple<string, 8>; night: Tuple<string, 8> } = {
         day: [
@@ -513,10 +513,10 @@ class WeatherApp implements IWatchApp {
 
     constructor() {
         this.id = ''
-        this.day_icon_element = document.querySelector('.wth-col:nth-child(1)>.wth-type-icon')!
-        this.night_icon_element = document.querySelector('.wth-col:nth-child(2)>.wth-type-icon')!
-        this.dat_temp_element = document.querySelector('.wth-col:nth-child(1) .wth-temp')!
-        this.night_temp_element = document.querySelector('.wth-col:nth-child(2) .wth-temp')!
+        this.day_icon_elm = document.querySelector('.wth-col:nth-child(1)>.wth-type-icon')!
+        this.night_icon_elm = document.querySelector('.wth-col:nth-child(2)>.wth-type-icon')!
+        this.dat_temp_elm = document.querySelector('.wth-col:nth-child(1) .wth-temp')!
+        this.night_temp_elm = document.querySelector('.wth-col:nth-child(2) .wth-temp')!
         this.pre_date = new Date()
     }
 
@@ -641,8 +641,8 @@ class WeatherApp implements IWatchApp {
         const r_day_temp = rangeRoll(day_temp_range[0], day_temp_range[1])
         const r_night_temp = rangeRoll(night_temp_range[0], night_temp_range[1])
 
-        this.dat_temp_element.textContent = WeatherApp.formatCelsius(r_day_temp)
-        this.night_temp_element.textContent = WeatherApp.formatCelsius(r_night_temp)
+        this.dat_temp_elm.textContent = WeatherApp.formatCelsius(r_day_temp)
+        this.night_temp_elm.textContent = WeatherApp.formatCelsius(r_night_temp)
     }
 
     rollIcons() {
@@ -651,19 +651,19 @@ class WeatherApp implements IWatchApp {
         const r_day_index = rangeRoll(icon_index_range.length)
         const r_night_index = rangeRoll(icon_index_range.length)
 
-        removeChildren(this.day_icon_element)
-        removeChildren(this.night_icon_element)
-        this.day_icon_element.innerHTML =
+        removeChildren(this.day_icon_elm)
+        removeChildren(this.night_icon_elm)
+        this.day_icon_elm.innerHTML =
             WeatherApp.SVG_ICONS.day[icon_index_range[r_day_index]]
-        this.night_icon_element.innerHTML =
+        this.night_icon_elm.innerHTML =
             WeatherApp.SVG_ICONS.night[icon_index_range[r_night_index]]
     }
 
     renderCertainIcons(day_index: number, night_index: number) {
-        removeChildren(this.day_icon_element)
-        removeChildren(this.night_icon_element)
-        this.day_icon_element.innerHTML = WeatherApp.SVG_ICONS.day[day_index]
-        this.night_icon_element.innerHTML = WeatherApp.SVG_ICONS.night[night_index]
+        removeChildren(this.day_icon_elm)
+        removeChildren(this.night_icon_elm)
+        this.day_icon_elm.innerHTML = WeatherApp.SVG_ICONS.day[day_index]
+        this.night_icon_elm.innerHTML = WeatherApp.SVG_ICONS.night[night_index]
     }
 
     update() {
@@ -692,10 +692,10 @@ class MusicApp implements IWatchApp {
     private progress_bar: HTMLElement
     private progress_dot: HTMLElement
     private progress_slide: HTMLElement
-    private title_element: HTMLElement
-    private author_element: HTMLElement
-    private duration_element: HTMLElement
-    private cur_duration_element: HTMLElement
+    private title_elm: HTMLElement
+    private author_elm: HTMLElement
+    private duration_elm: HTMLElement
+    private cur_duration_elm: HTMLElement
     private music_info: MusicInfo[]
 
     constructor() {
@@ -710,10 +710,10 @@ class MusicApp implements IWatchApp {
         this.progress_bar = document.querySelector('#music-prog')!
         this.progress_dot = document.querySelector('#music-dot')!
         this.progress_slide = document.querySelector('#music-slide')!
-        this.title_element = document.querySelector('#music-title>span:nth-child(1)')!
-        this.author_element = document.querySelector('#music-title>span:nth-child(2)')!
-        this.duration_element = document.querySelector('#music-time-row>.music-time:nth-child(2)')!
-        this.cur_duration_element = document.querySelector('#music-time-row>.music-time:nth-child(1)')!
+        this.title_elm = document.querySelector('#music-title>span:nth-child(1)')!
+        this.author_elm = document.querySelector('#music-title>span:nth-child(2)')!
+        this.duration_elm = document.querySelector('#music-time-row>.music-time:nth-child(2)')!
+        this.cur_duration_elm = document.querySelector('#music-time-row>.music-time:nth-child(1)')!
         this.music_info = []
     }
 
@@ -727,7 +727,7 @@ class MusicApp implements IWatchApp {
 
     updateCurDuration(duration: number) {
         this.cur_duration = duration
-        this.cur_duration_element.textContent = convertSecondsToTime(this.cur_duration)
+        this.cur_duration_elm.textContent = convertSecondsToTime(this.cur_duration)
     }
 
     togglePlayBtn(is_playing: boolean) {
@@ -748,9 +748,9 @@ class MusicApp implements IWatchApp {
     loadMusicInfo(index: number) {
         this.pauseMusic()
         this.updateCurDuration(0)
-        this.title_element.textContent = this.music_info[index].title
-        this.author_element.textContent = this.music_info[index].author
-        this.duration_element.textContent = convertSecondsToTime(this.music_info[index].len)
+        this.title_elm.textContent = this.music_info[index].title
+        this.author_elm.textContent = this.music_info[index].author
+        this.duration_elm.textContent = convertSecondsToTime(this.music_info[index].len)
         this.progress_bar.style.backgroundColor = this.music_info[index].color
         this.initMusicProgress()
     }
@@ -822,19 +822,19 @@ class ShiciApp implements IWatchApp {
     id: string
     private shici_info: ShiciInfo[]
     private masks: number[]
-    private title_element: HTMLElement
-    private dynasty_element: HTMLElement
-    private author_element: HTMLElement
-    private content_element: HTMLElement
+    private title_elm: HTMLElement
+    private dynasty_elm: HTMLElement
+    private author_elm: HTMLElement
+    private content_elm: HTMLElement
 
     constructor() {
         this.id = ''
         this.shici_info = []
         this.masks = []
-        this.title_element = document.querySelector('#shici-name')!
-        this.dynasty_element = document.querySelector('#shici-auth>span:nth-child(1)')!
-        this.author_element = document.querySelector('#shici-auth>span:nth-child(2)')!
-        this.content_element = document.querySelector('#shici-text')!
+        this.title_elm = document.querySelector('#shici-name')!
+        this.dynasty_elm = document.querySelector('#shici-auth>span:nth-child(1)')!
+        this.author_elm = document.querySelector('#shici-auth>span:nth-child(2)')!
+        this.content_elm = document.querySelector('#shici-text')!
     }
 
     onEnter() {
@@ -846,16 +846,16 @@ class ShiciApp implements IWatchApp {
     }
 
     render(index: number) {
-        this.title_element.textContent = this.shici_info[index].title
-        this.dynasty_element.textContent = this.shici_info[index].dynasty
-        this.author_element.textContent = this.shici_info[index].author
-        removeChildren(this.content_element)
+        this.title_elm.textContent = this.shici_info[index].title
+        this.dynasty_elm.textContent = this.shici_info[index].dynasty
+        this.author_elm.textContent = this.shici_info[index].author
+        removeChildren(this.content_elm)
 
         for (const sentence of this.shici_info[index].sentences) {
-            const sentence_element = document.createElement('div')
-            sentence_element.className = 'shici-row'
-            sentence_element.textContent = sentence
-            this.content_element.append(sentence_element)
+            const sentence_elm = document.createElement('div')
+            sentence_elm.className = 'shici-row'
+            sentence_elm.textContent = sentence
+            this.content_elm.append(sentence_elm)
         }
     }
 
@@ -894,8 +894,8 @@ class SportApp implements IWatchApp {
     private is_running: boolean
     private progress_arc_len: number
     private pre_degree: number
-    private distance_element: HTMLElement
-    private elapse_element: HTMLElement
+    private distance_elm: HTMLElement
+    private elapse_elm: HTMLElement
     private progress_color: HTMLElement
     private progress_bar: HTMLElement
     private head_dot_wrapper: HTMLElement
@@ -918,8 +918,8 @@ class SportApp implements IWatchApp {
         this.is_running = false
         this.progress_arc_len = 1.0
         this.pre_degree = 0
-        this.distance_element = document.querySelector('#run-meter>span:nth-child(1)')!
-        this.elapse_element = document.querySelector('#run-time>span:nth-child(2)')!
+        this.distance_elm = document.querySelector('#run-meter>span:nth-child(1)')!
+        this.elapse_elm = document.querySelector('#run-time>span:nth-child(2)')!
         this.progress_color = document.querySelector('#run-prog-color')!
         this.progress_bar = document.querySelector('#run-prog')!
         this.head_dot_wrapper = document.querySelector('#run-prog-color>.edge-cir:nth-child(2)')!
@@ -939,12 +939,12 @@ class SportApp implements IWatchApp {
 
     updateDistance(distance: number) {
         this.distance = distance
-        this.distance_element.textContent = this.distance.toFixed(2)
+        this.distance_elm.textContent = this.distance.toFixed(2)
     }
 
     updateElapse(elapse: number) {
         this.elapse = elapse
-        this.elapse_element.textContent = convertSecondsToTime(this.elapse)
+        this.elapse_elm.textContent = convertSecondsToTime(this.elapse)
     }
 
     runTick() {
@@ -1017,24 +1017,24 @@ class MessageApp implements IWatchApp {
     id: string
     private unchecked_cnt: number
     private is_empty: boolean
-    private message_list_element: HTMLElement
+    private message_list_elm: HTMLElement
     private pre_message_btn: HTMLElement
     private next_message_btn: HTMLElement
-    private notice_icon: HTMLElement
-    private message_page_element: HTMLElement
-    private placeholder_element: HTMLElement
+    private notification_icon: HTMLElement
+    private message_page_elm: HTMLElement
+    private placeholder_elm: HTMLElement
     private static WATCH_HEIGHT: number = 125
 
     constructor() {
         this.id = ''
         this.unchecked_cnt = 0
         this.is_empty = true
-        this.message_list_element = document.querySelector('#msg-list')!
+        this.message_list_elm = document.querySelector('#msg-list')!
         this.pre_message_btn = document.querySelector('#msg-up')!
         this.next_message_btn = document.querySelector('#msg-down')!
-        this.notice_icon = document.querySelector('#msg-cnt')!
-        this.message_page_element = document.querySelector('#msg-page')!
-        this.placeholder_element = document.querySelector('#msg-null')!
+        this.notification_icon = document.querySelector('#msg-cnt')!
+        this.message_page_elm = document.querySelector('#msg-page')!
+        this.placeholder_elm = document.querySelector('#msg-null')!
     }
 
     onEnter() {
@@ -1046,7 +1046,7 @@ class MessageApp implements IWatchApp {
     }
 
     renderBtns() {
-        const cur_top = parseInt(this.message_list_element.style.top)
+        const cur_top = parseInt(this.message_list_elm.style.top)
 
         this.pre_message_btn.style.display = 'none'
         this.next_message_btn.style.display = 'none'
@@ -1055,64 +1055,64 @@ class MessageApp implements IWatchApp {
             this.pre_message_btn.style.display = 'flex'
         }
         if (cur_top - MessageApp.WATCH_HEIGHT >
-            -this.message_list_element.children.length * MessageApp.WATCH_HEIGHT) {
+            -this.message_list_elm.children.length * MessageApp.WATCH_HEIGHT) {
             this.next_message_btn.style.display = 'flex'
         }
     }
 
     clickPreMessageBtn() {
         let next_top =
-            parseInt(this.message_list_element.style.top) + MessageApp.WATCH_HEIGHT
+            parseInt(this.message_list_elm.style.top) + MessageApp.WATCH_HEIGHT
 
         if (next_top > MessageApp.WATCH_HEIGHT) {
             next_top = 0
         }
 
-        this.message_list_element.style.top = `${next_top}px`
+        this.message_list_elm.style.top = `${next_top}px`
         this.renderBtns()
     }
 
     clickNextMessageBtn() {
         let next_top =
-            parseInt(this.message_list_element.style.top) - MessageApp.WATCH_HEIGHT
+            parseInt(this.message_list_elm.style.top) - MessageApp.WATCH_HEIGHT
         const max_height =
-            -(this.message_list_element.children.length - 1) * MessageApp.WATCH_HEIGHT
+            -(this.message_list_elm.children.length - 1) * MessageApp.WATCH_HEIGHT
 
         if (next_top < max_height) {
             next_top = max_height
         }
 
-        this.message_list_element.style.top = `${next_top}px`
+        this.message_list_elm.style.top = `${next_top}px`
         this.renderBtns()
     }
 
-    clearUncheckedNotice() {
+    clearNotification() {
         this.unchecked_cnt = 0
-        this.notice_icon.textContent = ''
-        this.notice_icon.style.display = 'none'
+        this.notification_icon.textContent = ''
+        this.notification_icon.style.display = 'none'
     }
 
-    updateUncheckedNotice() {
-        if (this.message_page_element.style.display !== 'none') { //信息页面被点开
-            this.clearUncheckedNotice()
+    updateNotification() {
+        if (this.message_page_elm.style.display !== 'none') { //信息页面被点开
+            this.clearNotification()
         } else {
-            this.notice_icon.textContent = this.unchecked_cnt.toString()
+            this.notification_icon.textContent = this.unchecked_cnt.toString()
 
             if (this.unchecked_cnt > 0) {
-                this.notice_icon.style.display = 'flex'
+                this.notification_icon.style.display = 'flex'
             } else {
-                this.notice_icon.style.display = 'none'
+                this.notification_icon.style.display = 'none'
             }
         }
     }
 
-    renderMessage(message_info: MessageInfo) {
+    receive(message_info: MessageInfo) {
         const date = new Date()
-        const new_message_element = document.createElement('div')
+        const new_message_elm = document.createElement('div')
 
-        new_message_element.className = 'msg-row'
-        new_message_element.setAttribute('md5', message_info.md5)
-        new_message_element.innerHTML =
+        new_message_elm.className = 'msg-row'
+        new_message_elm.setAttribute('md5', message_info.md5)
+        new_message_elm.innerHTML =
             `<div class="msg-from">
                 <span>${message_info.sender}</span>
                 <span>${padLeft(date.getHours().toString(), 2, '0')}:${padLeft(
@@ -1121,34 +1121,34 @@ class MessageApp implements IWatchApp {
             <div class="msg-text">${message_info.content}</div>`
 
         if (this.is_empty) {
-            this.message_list_element.removeChild(this.placeholder_element)
+            this.message_list_elm.removeChild(this.placeholder_elm)
             this.is_empty = false
         }
 
         let is_repeated = false
 
-        // Array.from(this.message_list_element.children).forEach((message_element) => {
-        //     if (message_element.getAttribute('md5') === message_info.md5) {
+        // Array.from(this.message_list_elm.children).forEach((message_elm) => {
+        //     if (message_elm.getAttribute('md5') === message_info.md5) {
         //         is_repeat = true
         //     }
         // })
 
-        for (const message_element of this.message_list_element.children) {
-            if (message_element.getAttribute('md5') === message_info.md5) {
+        for (const message_elm of this.message_list_elm.children) {
+            if (message_elm.getAttribute('md5') === message_info.md5) {
                 is_repeated = true
             }
         }
 
         if (!is_repeated) {
-            this.message_list_element.append(new_message_element)
+            this.message_list_elm.append(new_message_elm)
             this.unchecked_cnt += 1
             this.renderBtns()
-            this.updateUncheckedNotice()
+            this.updateNotification()
         }
     }
 }
 
-// TODO: 重写应用“设置”
+// TODO: 重写“设置”应用
 class SettingApp implements IWatchApp {
     id: string
     constructor() {
