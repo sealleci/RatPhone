@@ -1,4 +1,5 @@
-type Dictionary<K extends string | number | symbol = string, V = string> = { [key in K]?: V }
+import { Dictionary } from './type.js'
+
 type L10nRawData = {
     language: string
     fields: Dictionary

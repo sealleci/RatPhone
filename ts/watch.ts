@@ -1,47 +1,118 @@
-import { Tuple, NumberRange } from './type.js'
+import { Dictionary, Tuple, NumberRange } from './type.js'
 import { sleep, rangeRoll, padLeft, convertSecondsToTime, removeChildren } from './util.js'
 import { Phone } from './phone.js'
 
-// TODO: 按钮绑定都放到App的构造函数里
+class WatchAPI {
+    static readonly HEIGHT: number = 125
+    static readonly WIDTH: number = 125
+}
+
+interface AppIconInfo {
+    name: string
+    svg: string
+    css_dict: Dictionary
+    is_notification_enable: boolean
+}
+
+// TODO: 按钮绑定都放到Watch的init里
 interface IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
     onEnter(): void
     onExit(): void
 }
 
 // TODO: 手表提供屏幕宽高，计时接口
 class Watch {
-    app_list: IWatchApp[]
+    private app_list: IWatchApp[]
+    private home: HTMLElement
+
     constructor() {
         this.app_list = []
+        this.home = document.querySelector('#watch-main-slide')!
+    }
+
+    renderIcon(app_id: string, icon_info: AppIconInfo, on_enter_fn: () => void) {
+        const icon_wrapper_elm = document.createElement('div')
+        const icon_elm = document.createElement('div')
+        const icon_name_elm = document.createElement('div')
+
+        icon_wrapper_elm.classList.add('icon-row')
+        icon_elm.classList.add('watch-icon', `${app_id}-icon`)
+        icon_elm.setAttribute('data-page', `${app_id}-page`)
+        icon_elm.innerHTML =
+            `${icon_info.is_notification_enable ?
+                '<div id="msg-cnt" style="display: none;"></div>' : ''}
+            ${icon_info.svg}`
+        icon_name_elm.textContent = icon_info.name
+
+        for (const property_key of Object.keys(icon_info.css_dict)) {
+            icon_elm.style.setProperty(property_key,
+                icon_info.css_dict[property_key] ?? null)
+        }
+
+        icon_elm.addEventListener('click', () => {
+            on_enter_fn()
+        })
+        icon_wrapper_elm.appendChild(icon_elm)
+        icon_wrapper_elm.appendChild(icon_name_elm)
+        this.home.appendChild(icon_wrapper_elm)
+    }
+
+    init() {
+        // TODO: 动态添加图标
     }
 }
 
+// TODO: 如何控制手机电池
 class BatteryApp implements IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
+    private text_elm: HTMLElement
+    private bg_elm: HTMLElement
+
     constructor() {
         this.id = ''
+        this.icon_info = {
+            name: '',
+            svg: '',
+            css_dict: {},
+            is_notification_enable: false
+        }
+        this.text_elm = document.querySelector('#power-page-battery>span')!
+        this.bg_elm = document.querySelector('#power-page-battery-bg')!
     }
 
     onEnter() {
-
     }
 
     onExit() {
 
     }
+
+    updateBatteryLevel(percentage: number) {
+        this.text_elm.textContent = `${percentage}%`
+        this.bg_elm.style.width = `${percentage / 100 * 60}px`
+    }
 }
 
 class ClockApp implements IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
     private hour_elm: HTMLElement
     private minute_elm: HTMLElement
     private date_elm: HTMLElement
-    private static HANZI_NUMBERS: readonly string[] =
+    private static readonly HANZI_NUMBERS: readonly string[] =
         ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 
     constructor() {
         this.id = ''
+        this.icon_info = {
+            name: '',
+            svg: '',
+            css_dict: {},
+            is_notification_enable: false
+        }
         this.hour_elm = document.querySelector('#watch-time>span:nth-child(1)')!
         this.minute_elm = document.querySelector('#watch-time>span:nth-child(3)')!
         this.date_elm = document.querySelector('#watch-date')!
@@ -125,7 +196,8 @@ interface JumpGameBlock {
 }
 
 class JumpGameApp implements IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
     private player: HTMLElement
     private stage: HTMLElement
     private lane: HTMLElement
@@ -147,6 +219,12 @@ class JumpGameApp implements IWatchApp {
 
     constructor() {
         this.id = ''
+        this.icon_info = {
+            name: '',
+            svg: '',
+            css_dict: {},
+            is_notification_enable: false
+        }
         this.player = document.querySelector('#jump-player')!
         this.stage = document.querySelector('#jump-stage')!
         this.lane = document.querySelector('#jump-objs')!
@@ -246,7 +324,7 @@ class JumpGameApp implements IWatchApp {
 
         block1.elm.className = 'jump-obj'
         block1.elm.style.right = '15px'
-        this.lane.append(block1.elm)
+        this.lane.appendChild(block1.elm)
         inactive_blocks.push(block1)
 
         if (r >= proportions[0]) {
@@ -258,7 +336,7 @@ class JumpGameApp implements IWatchApp {
             block2.elm.className = 'jump-obj'
             block2.elm.style.right = '15px'
             block2.elm.style.bottom = `${block1.elm.clientHeight}px`
-            this.lane.append(block2.elm)
+            this.lane.appendChild(block2.elm)
             inactive_blocks.push(block2)
         }
 
@@ -271,7 +349,7 @@ class JumpGameApp implements IWatchApp {
             block3.elm.className = 'jump-obj'
             block3.elm.style.right = `${15 + block1.elm.clientWidth}px`
             block3.elm.style.bottom = '0px'
-            this.lane.append(block3.elm)
+            this.lane.appendChild(block3.elm)
             inactive_blocks.push(block3)
         }
 
@@ -355,20 +433,27 @@ class JumpGameApp implements IWatchApp {
 
 // TODO: 触摸事件
 class PetRatApp implements IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
     private max_tail_deg: number
     private min_tail_deg: number
     private tail_deg: number
     private is_locked: boolean
     private pet_cnt: number
-    private left_eye_parts: readonly HTMLElement[]
-    private right_eye_parts: readonly HTMLElement[]
+    private readonly left_eye_parts: readonly HTMLElement[]
+    private readonly right_eye_parts: readonly HTMLElement[]
     private tail: HTMLElement
     private heart_list: HTMLElement
     private pet_cnt_display: HTMLElement
 
     constructor() {
         this.id = ''
+        this.icon_info = {
+            name: '',
+            svg: '',
+            css_dict: {},
+            is_notification_enable: false
+        }
         this.max_tail_deg = 60
         this.min_tail_deg = 30
         this.tail_deg = this.min_tail_deg
@@ -430,8 +515,8 @@ class PetRatApp implements IWatchApp {
         heart.setAttribute('viewBox', '0 0 16 16')
         path.setAttribute('d',
             'M4 1c2.21 0 4 1.755 4 3.92C8 2.755 9.79 1 12 1s4 1.755 4 3.92c0 3.263-3.234 4.414-7.608 9.608a.513.513 0 0 1-.784 0C3.234 9.334 0 8.183 0 4.92 0 2.755 1.79 1 4 1z')
-        heart.append(path)
-        this.heart_list.append(heart)
+        heart.appendChild(path)
+        this.heart_list.appendChild(heart)
         setTimeout(() => {
             this.heart_list.removeChild(heart)
         }, 300)
@@ -445,7 +530,8 @@ class PetRatApp implements IWatchApp {
 }
 
 class WeatherApp implements IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
     private day_icon_elm: HTMLElement
     private night_icon_elm: HTMLElement
     private dat_temp_elm: HTMLElement
@@ -513,6 +599,12 @@ class WeatherApp implements IWatchApp {
 
     constructor() {
         this.id = ''
+        this.icon_info = {
+            name: '',
+            svg: '',
+            css_dict: {},
+            is_notification_enable: false
+        }
         this.day_icon_elm = document.querySelector('.wth-col:nth-child(1)>.wth-type-icon')!
         this.night_icon_elm = document.querySelector('.wth-col:nth-child(2)>.wth-type-icon')!
         this.dat_temp_elm = document.querySelector('.wth-col:nth-child(1) .wth-temp')!
@@ -681,7 +773,8 @@ interface MusicInfo {
 }
 
 class MusicApp implements IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
     private cur_index: number
     private play_intv: number
     private play_timer: number | undefined
@@ -700,6 +793,12 @@ class MusicApp implements IWatchApp {
 
     constructor() {
         this.id = ''
+        this.icon_info = {
+            name: '',
+            svg: '',
+            css_dict: {},
+            is_notification_enable: false
+        }
         this.cur_index = 0
         this.play_intv = 250
         this.play_timer = undefined
@@ -819,7 +918,8 @@ interface ShiciInfo {
 }
 
 class ShiciApp implements IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
     private shici_info: ShiciInfo[]
     private masks: number[]
     private title_elm: HTMLElement
@@ -829,6 +929,12 @@ class ShiciApp implements IWatchApp {
 
     constructor() {
         this.id = ''
+        this.icon_info = {
+            name: '',
+            svg: '',
+            css_dict: {},
+            is_notification_enable: false
+        }
         this.shici_info = []
         this.masks = []
         this.title_elm = document.querySelector('#shici-name')!
@@ -855,7 +961,7 @@ class ShiciApp implements IWatchApp {
             const sentence_elm = document.createElement('div')
             sentence_elm.className = 'shici-row'
             sentence_elm.textContent = sentence
-            this.content_elm.append(sentence_elm)
+            this.content_elm.appendChild(sentence_elm)
         }
     }
 
@@ -881,7 +987,8 @@ class ShiciApp implements IWatchApp {
 }
 
 class SportApp implements IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
     private cur_bg_color: string
     private run_colors: string[]
     private cur_color_index: number
@@ -906,6 +1013,12 @@ class SportApp implements IWatchApp {
 
     constructor() {
         this.id = ''
+        this.icon_info = {
+            name: '',
+            svg: '',
+            css_dict: {},
+            is_notification_enable: false
+        }
         this.cur_bg_color = 'rgb(100,100,100)'
         this.run_colors = ['#39A2DB', '#8DE03A', '#39A2DB', '#DB69D2']
         this.cur_color_index = 0
@@ -1014,7 +1127,8 @@ interface MessageInfo {
 
 // TODO: 计算消息的md5
 class MessageApp implements IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
     private unchecked_cnt: number
     private is_empty: boolean
     private message_list_elm: HTMLElement
@@ -1023,10 +1137,15 @@ class MessageApp implements IWatchApp {
     private notification_icon: HTMLElement
     private message_page_elm: HTMLElement
     private placeholder_elm: HTMLElement
-    private static WATCH_HEIGHT: number = 125
 
     constructor() {
         this.id = ''
+        this.icon_info = {
+            name: '',
+            svg: '',
+            css_dict: {},
+            is_notification_enable: false
+        }
         this.unchecked_cnt = 0
         this.is_empty = true
         this.message_list_elm = document.querySelector('#msg-list')!
@@ -1054,17 +1173,17 @@ class MessageApp implements IWatchApp {
         if (cur_top < 0) {
             this.pre_message_btn.style.display = 'flex'
         }
-        if (cur_top - MessageApp.WATCH_HEIGHT >
-            -this.message_list_elm.children.length * MessageApp.WATCH_HEIGHT) {
+        if (cur_top - WatchAPI.HEIGHT >
+            -this.message_list_elm.children.length * WatchAPI.HEIGHT) {
             this.next_message_btn.style.display = 'flex'
         }
     }
 
     clickPreMessageBtn() {
         let next_top =
-            parseInt(this.message_list_elm.style.top) + MessageApp.WATCH_HEIGHT
+            parseInt(this.message_list_elm.style.top) + WatchAPI.HEIGHT
 
-        if (next_top > MessageApp.WATCH_HEIGHT) {
+        if (next_top > WatchAPI.HEIGHT) {
             next_top = 0
         }
 
@@ -1074,9 +1193,9 @@ class MessageApp implements IWatchApp {
 
     clickNextMessageBtn() {
         let next_top =
-            parseInt(this.message_list_elm.style.top) - MessageApp.WATCH_HEIGHT
+            parseInt(this.message_list_elm.style.top) - WatchAPI.HEIGHT
         const max_height =
-            -(this.message_list_elm.children.length - 1) * MessageApp.WATCH_HEIGHT
+            -(this.message_list_elm.children.length - 1) * WatchAPI.HEIGHT
 
         if (next_top < max_height) {
             next_top = max_height
@@ -1140,7 +1259,7 @@ class MessageApp implements IWatchApp {
         }
 
         if (!is_repeated) {
-            this.message_list_elm.append(new_message_elm)
+            this.message_list_elm.appendChild(new_message_elm)
             this.unchecked_cnt += 1
             this.renderBtns()
             this.updateNotification()
@@ -1150,9 +1269,17 @@ class MessageApp implements IWatchApp {
 
 // TODO: 重写“设置”应用
 class SettingApp implements IWatchApp {
-    id: string
+    readonly id: string
+    readonly icon_info: AppIconInfo
+
     constructor() {
         this.id = ''
+        this.icon_info = {
+            name: '',
+            svg: '',
+            css_dict: {},
+            is_notification_enable: false
+        }
     }
 
     onEnter() {
