@@ -25,11 +25,174 @@ interface IWatchApp {
 // TODO: 手表提供屏幕宽高，计时接口
 class Watch {
     private app_list: IWatchApp[]
-    private home: HTMLElement
+    private watch_elm: HTMLElement
+    private home_page: HTMLElement
+    private app_list_elm: HTMLElement
+    private main_page_switch_lock: boolean
 
     constructor() {
         this.app_list = []
-        this.home = document.querySelector('#watch-main-slide')!
+        this.watch_elm = document.querySelector('#watch')!
+        this.home_page = document.querySelector('#watch-main-page')!
+        this.app_list_elm = document.querySelector('#watch-main-slide')!
+        this.main_page_switch_lock = false
+    }
+
+    findAppById(id: string): IWatchApp | null {
+        for (const app of this.app_list) {
+            if (app.id === id) {
+                return app
+            }
+        }
+
+        return null
+    }
+
+    clickWatchPrevBtn() {
+        if (this.main_page_switch_lock) {
+            return
+        }
+
+        if (this.home_page.style.display === 'none') {
+            return
+        }
+
+        const app_cnt = document.querySelectorAll('#watch-main-slide>.icon-row').length
+        const next_l = parseInt(this.app_list_elm.style.left) - WatchAPI.WIDTH
+
+        if (next_l >= WatchAPI.WIDTH) {
+            const pre_node = document.querySelector('#watch-main-slide>.icon-row:last-child')
+
+            if (pre_node === null) {
+                return
+            }
+
+            const new_node = pre_node.cloneNode(true)
+
+            this.app_list_elm.prepend(new_node)
+            this.app_list_elm.style.transition = 'none'
+            this.app_list_elm.style.left = `${next_l - WatchAPI.WIDTH * 2}px`
+            this.main_page_switch_lock = true
+
+            // TODO: 这里是在干吗
+            sleep(25).then(() => {
+                this.app_list_elm.style.transition = 'left 0.25s'
+                this.app_list_elm.style.left = `${next_l - WatchAPI.WIDTH}px`
+
+                sleep(250).then(() => {
+                    this.app_list_elm.style.transition = 'none'
+                    this.app_list_elm.style.left = `${-(app_cnt - 1) * WatchAPI.WIDTH}px`
+
+                    if (this.app_list_elm.firstElementChild != null) {
+                        this.app_list_elm.removeChild(this.app_list_elm.firstElementChild)
+                    }
+
+                    this.main_page_switch_lock = false
+                })
+            })
+        } else {
+            this.app_list_elm.style.transition = 'left 0.25s'
+            this.app_list_elm.style.left = `${next_l}px`
+        }
+    }
+
+    clickWatchNextBtn() {
+        if (this.main_page_switch_lock) {
+            return
+        }
+
+        if (this.home_page.style.display === 'none') {
+            return
+        }
+
+        const app_cnt = document.querySelectorAll('#watch-main-slide>.icon-row').length
+        const next_l = parseInt(this.app_list_elm.style.left) - WatchAPI.WIDTH
+
+        if (next_l <= -(app_cnt) * WatchAPI.WIDTH) {
+            const pre_node = document.querySelector('#watch-main-slide>.icon-row:first-child')
+
+            if (pre_node === null) {
+                return
+            }
+
+            const new_node = pre_node.cloneNode(true)
+
+            this.app_list_elm.append(new_node)
+            this.app_list_elm.style.transition = 'left 0.25s'
+            this.app_list_elm.style.left = `${next_l}px`
+            this.main_page_switch_lock = true
+
+            sleep(250).then(() => {
+                this.app_list_elm.style.transition = 'none'
+                this.app_list_elm.style.left = '0px'
+
+                if (this.app_list_elm.firstElementChild != null) {
+                    this.app_list_elm.removeChild(this.app_list_elm.firstElementChild)
+                }
+
+                this.main_page_switch_lock = false
+            })
+        } else {
+            this.app_list_elm.style.transition = 'left 0.25s'
+            this.app_list_elm.style.left = `${next_l}px`
+        }
+    }
+
+    clickWatchBackBtn() {
+        for (const i of this.watch_elm.querySelectorAll<HTMLElement>('div')) {
+            if (/^.+-page$/.test(i.id)) {
+                if (i !== this.home_page) {
+                    if (i.style.display !== 'none') {
+                        switch (i.id) {
+                            case 'jump-page':
+                                initJump();
+                                break;
+                            case 'music-page':
+                                pauseMusic();
+                                break;
+                            case 'spt-page':
+                                pauseRun();
+                                break;
+                            case 'msg-page':
+                                clearNotRead();
+                                break;
+                            default:
+                                break;
+                        }
+                        i.style.position = 'absolute';
+                        i.style.animation = 'watch-page-out 0.2s ease-out 0s 1';
+                        sleep(200).then(() => {
+                            i.style.display = 'none';
+                            i.style.position = 'relative';
+                        })
+                    } else {
+                        i.style.display = 'none';
+                    }
+                } else {
+                    i.style.display = 'flex';
+                }
+            }
+        }
+    }
+
+    clickWatchIcon() {
+        for (const i of document.querySelectorAll('#watch>div')) {
+            if (/^.+-page$/.test(i.id)) {
+                if (i.id !== this.getAttribute('data-page')) {
+                    i.style.display = 'none';
+                } else {
+                    i.style.animation = 'watch-page-in 0.3s ease-out 0s 1';
+                    i.style.display = 'flex';
+                    switch (i.id) {
+                        case 'msg-page':
+                            clearNotRead();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
     }
 
     renderIcon(app_id: string, icon_info: AppIconInfo, on_enter_fn: () => void) {
@@ -56,7 +219,7 @@ class Watch {
         })
         icon_wrapper_elm.appendChild(icon_elm)
         icon_wrapper_elm.appendChild(icon_name_elm)
-        this.home.appendChild(icon_wrapper_elm)
+        this.app_list_elm.appendChild(icon_wrapper_elm)
     }
 
     init() {
