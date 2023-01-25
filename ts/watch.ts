@@ -38,7 +38,7 @@ class Watch {
         this.main_page_switch_lock = false
     }
 
-    findAppById(id: string): IWatchApp | null {
+    getAppById(id: string): IWatchApp | null {
         for (const app of this.app_list) {
             if (app.id === id) {
                 return app
@@ -138,60 +138,54 @@ class Watch {
         }
     }
 
+    // TODO: 传入元素参数后重写
     clickWatchBackBtn() {
-        for (const i of this.watch_elm.querySelectorAll<HTMLElement>('div')) {
-            if (/^.+-page$/.test(i.id)) {
-                if (i !== this.home_page) {
-                    if (i.style.display !== 'none') {
-                        switch (i.id) {
-                            case 'jump-page':
-                                initJump();
-                                break;
-                            case 'music-page':
-                                pauseMusic();
-                                break;
-                            case 'spt-page':
-                                pauseRun();
-                                break;
-                            case 'msg-page':
-                                clearNotRead();
-                                break;
-                            default:
-                                break;
-                        }
-                        i.style.position = 'absolute';
-                        i.style.animation = 'watch-page-out 0.2s ease-out 0s 1';
-                        sleep(200).then(() => {
-                            i.style.display = 'none';
-                            i.style.position = 'relative';
-                        })
-                    } else {
-                        i.style.display = 'none';
-                    }
-                } else {
-                    i.style.display = 'flex';
-                }
+        for (const item_elm of this.watch_elm.querySelectorAll<HTMLElement>('div')) {
+            if (item_elm.id === 'watch-main-page') {
+                item_elm.style.display = 'flex'
+                continue
+            }
+
+            const cur_app = this.getAppById(item_elm.getAttribute('app-id') ?? '')
+
+            if (cur_app === null) {
+                continue
+            }
+
+            // TODO: 添加App是否active的标志
+            if (item_elm.style.display !== 'none') {
+                cur_app.onExit()
+                item_elm.style.position = 'absolute'
+                item_elm.style.animation = 'watch-page-out 0.2s ease-out 0s 1'
+
+                sleep(200).then(() => {
+                    item_elm.style.display = 'none'
+                    item_elm.style.position = 'relative'
+                })
+            } else {
+                item_elm.style.display = 'none'
             }
         }
     }
 
-    clickWatchIcon() {
-        for (const i of document.querySelectorAll('#watch>div')) {
-            if (/^.+-page$/.test(i.id)) {
-                if (i.id !== this.getAttribute('data-page')) {
-                    i.style.display = 'none';
-                } else {
-                    i.style.animation = 'watch-page-in 0.3s ease-out 0s 1';
-                    i.style.display = 'flex';
-                    switch (i.id) {
-                        case 'msg-page':
-                            clearNotRead();
-                            break;
-                        default:
-                            break;
-                    }
-                }
+    // TODO: 传入元素参数后重写
+    clickWatchIcon(icon_elm: HTMLElement) {
+        for (const item_elm of document.querySelectorAll<HTMLElement>('#watch>div')) {
+            if (item_elm.id !== icon_elm.getAttribute('app-id')) {
+                item_elm.style.display = 'none'
+                continue
             }
+
+            const cur_app = this.getAppById(item_elm.getAttribute('app-id') ?? '')
+
+            if (cur_app === null) {
+                item_elm.style.display = 'none'
+                continue
+            }
+
+            item_elm.style.animation = 'watch-page-in 0.3s ease-out 0s 1'
+            item_elm.style.display = 'flex'
+            cur_app.onEnter()
         }
     }
 
@@ -203,6 +197,7 @@ class Watch {
         icon_wrapper_elm.classList.add('icon-row')
         icon_elm.classList.add('watch-icon', `${app_id}-icon`)
         icon_elm.setAttribute('data-page', `${app_id}-page`)
+        icon_elm.setAttribute('app-id', app_id)
         icon_elm.innerHTML =
             `${icon_info.is_notification_enable ?
                 '<div id="msg-cnt" style="display: none;"></div>' : ''}
@@ -233,6 +228,9 @@ class BatteryApp implements IWatchApp {
     readonly icon_info: AppIconInfo
     private text_elm: HTMLElement
     private bg_elm: HTMLElement
+    private is_power_still: boolean
+    private watch_power_timer: number | undefined
+    private watch_power_intv: number
 
     constructor() {
         this.id = ''
@@ -244,6 +242,9 @@ class BatteryApp implements IWatchApp {
         }
         this.text_elm = document.querySelector('#power-page-battery>span')!
         this.bg_elm = document.querySelector('#power-page-battery-bg')!
+        this.is_power_still = false
+        this.watch_power_timer = undefined
+        this.watch_power_intv = 100
     }
 
     onEnter() {
@@ -256,6 +257,16 @@ class BatteryApp implements IWatchApp {
     updateBatteryLevel(percentage: number) {
         this.text_elm.textContent = `${percentage}%`
         this.bg_elm.style.width = `${percentage / 100 * 60}px`
+    }
+
+    // TODO: 按压电池事件
+    pressWatchPowerBtn() {
+        this.is_power_still = true
+        this.watch_power_timer = setTimeout(() => { }, this.watch_power_intv)
+    }
+
+    releaseWatchPowerBtn() {
+        this.is_power_still = false
     }
 }
 
@@ -441,7 +452,7 @@ class JumpGameApp implements IWatchApp {
             h: this.player.clientHeight
         }
         const blocks =
-            document.querySelectorAll('#jump-objs>.jump-obj') satisfies NodeListOf<HTMLElement>
+            document.querySelectorAll<HTMLElement>('#jump-objs>.jump-obj')
 
         for (const block of blocks) {
             const block_obj: JumpGameCollisionObject = {
@@ -526,7 +537,7 @@ class JumpGameApp implements IWatchApp {
 
     init() {
         this.is_started = false
-        document.querySelectorAll('#jump-objs>.jump-obj').forEach((block_elm) => {
+        document.querySelectorAll<HTMLElement>('#jump-objs>.jump-obj').forEach((block_elm) => {
             clearInterval(parseInt(block_elm.getAttribute('timer') ?? ''))
         })
         removeChildren(this.lane)
@@ -544,7 +555,7 @@ class JumpGameApp implements IWatchApp {
 
     terminate() {
         this.is_started = false
-        document.querySelectorAll('#jump-objs>.jump-obj').forEach((block_elm) => {
+        document.querySelectorAll<HTMLElement>('#jump-objs>.jump-obj').forEach((block_elm) => {
             clearInterval(parseInt(block_elm.getAttribute('timer') ?? ''))
         })
         clearInterval(this.game_timer)
